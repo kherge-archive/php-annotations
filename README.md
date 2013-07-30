@@ -1,6 +1,8 @@
 Annotations
 ===========
 
+[![Build Status][]](https://travis-ci.org/herrera-io/php-annotations)
+
 This library will generate tokens from [Doctrine annotations][]. Unlike the
 original Doctrine [Annotations][] library, it is not required that any of the
 annotation classes be loaded, or even present since no class name or constant
@@ -89,6 +91,7 @@ Documentation
     - [Tokenizing][]
     - [Converting][]
 
+[Build Status]: https://travis-ci.org/herrera-io/php-annotations.png?branch=master
 [Doctrine annotations]: http://docs.doctrine-project.org/projects/doctrine-common/en/latest/reference/annotations.html
 [Annotations]: https://github.com/doctrine/annotations
 [Installing]: docs/00-Installing.md
