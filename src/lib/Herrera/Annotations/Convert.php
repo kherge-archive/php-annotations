@@ -32,19 +32,71 @@ class Convert
     /**
      * Converts the tokens back into a string.
      *
+     * Formatting options:
+     *
+     * ```
+     * array(
+     *     'indent' => array(   // indentation options
+     *         'break' => "\n", // the line break character to use
+     *         'char' => ' ',   // the indentation character to repeat
+     *         'size' => 0,     // the number of times to repeat "char"
+     *     )
+     * )
+     * ```
+     *
      * @param array $tokens The tokens.
+     * @param array $format The formatting options.
      *
      * @return string The string.
      *
      * @throws ConvertException If a token is invalid.
      */
-    public static function toString(array $tokens)
+    public static function toString(array $tokens, array $format = array())
     {
+        $format = array_replace_recursive(
+            array(
+                'indent' => array(
+                    'break' => "\n",
+                    'char' => ' ',
+                    'size' => 0,
+                ),
+            ),
+            $format
+        );
+
+        $level = 0;
+        $indent = function () use ($format, &$level) {
+            $string = '';
+
+            if ($format['indent']['size']) {
+                $string .= $format['indent']['break'];
+                $string .= str_repeat(
+                    $format['indent']['char'],
+                    $format['indent']['size'] * $level
+                );
+            }
+
+            return $string;
+        };
+
         $string = '';
 
         foreach ($tokens as $index => $token) {
             if (!isset($token[0])) {
                 throw ConvertException::invalidToken($index);
+            }
+
+            if ((DocLexer::T_OPEN_CURLY_BRACES === $token[0])
+                || (DocLexer::T_OPEN_PARENTHESIS === $token[0])) {
+                $level++;
+            } elseif ((DocLexer::T_CLOSE_CURLY_BRACES === $token[0])
+                || (DocLexer::T_CLOSE_PARENTHESIS === $token[0])) {
+                if ($level--) {
+                    $string .= $indent();
+                }
+            } elseif (isset($tokens[$index - 1])
+                && (DocLexer::T_COMMA === $tokens[$index - 1][0])) {
+                $string .= $indent();
             }
 
             switch ($token[0]) {
@@ -65,6 +117,11 @@ class Convert
                     }
 
                     $string .= self::$map[$token[0]];
+
+                    if ((DocLexer::T_OPEN_PARENTHESIS === $token[0])
+                        || (DocLexer::T_OPEN_CURLY_BRACES === $token[0])) {
+                        $string .= $indent();
+                    }
             }
         }
 

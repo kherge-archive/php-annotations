@@ -18,20 +18,20 @@ class ConvertTest extends TestCase
         $original = <<<DOCBLOCK
 /**
  * This is the original docblock.
-
-@My\Annotation(
-    123,
-    "string",
-    1.23,
-    AN_IDENTIFIER,
-    {
-        key="value",
-        another: "thing"
-    },
-    true,
-    null,
-    false
-)
+ *
+ * @My\Annotation(
+ *     123,
+ *     "string",
+ *     1.23,
+ *     AN_IDENTIFIER,
+ *     {
+ *         key="value",
+ *         another: "thing"
+ *     },
+ *     true,
+ *     null,
+ *     false
+ * )
  */
 DOCBLOCK;
 
@@ -42,6 +42,53 @@ EXPECTED;
         $this->assertEquals(
             $expected,
             Convert::toString($this->tokenize->parse($original))
+        );
+    }
+
+    public function testToStringFormatted()
+    {
+        $original = <<<DOCBLOCK
+/**
+ * @ORM\JoinTable(
+ *     name="myTableJoin",
+ *     joinColumns={
+ *         @ORM\JoinColumn(name="joinA",referencedColumnName="refA")
+ *     },
+ *     inverseJoinColumns={
+ *         @ORM\JoinColumn(name="joinB",referencedColumnName="refB")
+ *     }
+ * )
+ */
+DOCBLOCK;
+
+        $expected = <<<EXPECTED
+@ORM\JoinTable(
+    name="myTableJoin",
+    joinColumns={
+        @ORM\JoinColumn(
+            name="joinA",
+            referencedColumnName="refA"
+        )
+    },
+    inverseJoinColumns={
+        @ORM\JoinColumn(
+            name="joinB",
+            referencedColumnName="refB"
+        )
+    }
+)
+EXPECTED;
+
+        $this->assertEquals(
+            $expected,
+            Convert::toString(
+                $this->tokenize->parse($original),
+                array(
+                    'indent' => array(
+                        'size' => 4
+                    )
+                )
+            )
         );
     }
 
