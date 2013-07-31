@@ -15,7 +15,7 @@ use Herrera\Annotations\Exception\SyntaxException;
  *
  * @author Kevin Herrera <kevin@herrera.io>
  */
-class Tokenize
+class Tokenizer
 {
     /**
      * The list of valid class identifier.

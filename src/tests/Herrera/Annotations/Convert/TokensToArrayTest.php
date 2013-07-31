@@ -4,7 +4,7 @@ namespace Herrera\Annotations\Tests\Convert;
 
 use Doctrine\Common\Annotations\DocLexer;
 use Herrera\Annotations\Convert\TokensToArray;
-use Herrera\Annotations\Tokenize;
+use Herrera\Annotations\Tokenizer;
 use Herrera\PHPUnit\TestCase;
 
 class TokensToArrayTest extends TestCase
@@ -15,7 +15,7 @@ class TokensToArrayTest extends TestCase
     private $converter;
 
     /**
-     * @var Tokenize
+     * @var Tokenizer
      */
     private $tokenizer;
 
@@ -377,6 +377,6 @@ DOCBLOCK
     protected function setUp()
     {
         $this->converter = new TokensToArray();
-        $this->tokenizer = new Tokenize();
+        $this->tokenizer = new Tokenizer();
     }
 }

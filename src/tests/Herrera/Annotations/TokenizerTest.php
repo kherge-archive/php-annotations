@@ -3,13 +3,13 @@
 namespace Herrera\Annotations\Tests;
 
 use Doctrine\Common\Annotations\DocLexer;
-use Herrera\Annotations\Tokenize;
+use Herrera\Annotations\Tokenizer;
 use Herrera\PHPUnit\TestCase;
 
-class TokenizeTest extends TestCase
+class TokenizerTest extends TestCase
 {
     /**
-     * @var Tokenize
+     * @var Tokenizer
      */
     private $tokenize;
 
@@ -459,6 +459,6 @@ DOCBLOCK
 
     protected function setUp()
     {
-        $this->tokenize = new Tokenize();
+        $this->tokenize = new Tokenizer();
     }
 }

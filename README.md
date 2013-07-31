@@ -10,9 +10,9 @@ name validation is performed.
 
 ```php
 use Herrera\Annotations\Convert;
-use Herrera\Annotations\Tokenize;
+use Herrera\Annotations\Tokenizer;
 
-$tokenize = new Tokenize();
+$tokenize = new Tokenizer();
 
 $docblock = <<<DOCBLOCK
 /**
