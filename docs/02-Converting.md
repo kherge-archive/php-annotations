@@ -25,49 +25,40 @@ print_r($converter->convert($tokens);
 will result in the following output:
 
 ```
-Array
-(
-    [0] => stdClass Object
-        (
-            [name] => ORM\JoinTable
-            [values] => Array
-                (
-                    [name] => myJoinTable
-                    [joinColumns] => Array
-                        (
-                            [0] => stdClass Object
-                                (
-                                    [name] => ORM\JoinColumn
-                                    [values] => Array
-                                        (
-                                            [name] => columnA
-                                            [referencedColumnName] => columnB
-                                        )
-
-                                )
-
-                        )
-
-                    [inverseJoinColumns] => Array
-                        (
-                            [0] => stdClass Object
-                                (
-                                    [name] => ORM\JoinColumn
-                                    [values] => Array
-                                        (
-                                            [name] => columnC
-                                            [referencedColumnName] => columnD
-                                            [unique] => 1
-                                        )
-
-                                )
-
-                        )
-
-                )
-
-        )
-
+$array = array (
+  0 =>
+  stdClass::__set_state(array(
+     'name' => 'ORM\\JoinTable',
+     'values' =>
+    array (
+      'name' => 'myJoinTable',
+      'joinColumns' =>
+      array (
+        0 =>
+        stdClass::__set_state(array(
+           'name' => 'ORM\\JoinColumn',
+           'values' =>
+          array (
+            'name' => 'columnA',
+            'referencedColumnName' => 'columnB',
+          ),
+        )),
+      ),
+      'inverseJoinColumns' =>
+      array (
+        0 =>
+        stdClass::__set_state(array(
+           'name' => 'ORM\\JoinColumn',
+           'values' =>
+          array (
+            'name' => 'columnC',
+            'referencedColumnName' => 'columnD',
+            'unique' => true,
+          ),
+        )),
+      ),
+    ),
+  )),
 )
 ```
 
