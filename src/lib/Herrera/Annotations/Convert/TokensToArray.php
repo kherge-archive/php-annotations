@@ -23,7 +23,7 @@ use Herrera\Annotations\Exception\ConvertException;
  *
  * @author Kevin Herrera <kevin@herrera.io>
  */
-class TokensToArray implements ConvertInterface
+class TokensToArray extends AbstractConverter
 {
     /**
      * The currently active annotation.
@@ -33,44 +33,11 @@ class TokensToArray implements ConvertInterface
     private $current;
 
     /**
-     * The current token offset.
-     *
-     * @var integer
-     */
-    private $offset;
-
-    /**
      * The stack of references.
      *
      * @var array
      */
     private $references;
-
-    /**
-     * The converted array result.
-     *
-     * @var array
-     */
-    private $result;
-
-    /**
-     * The list of tokens to process.
-     *
-     * @var array
-     */
-    private $tokens;
-
-    /**
-     * The list of tokens that require a value.
-     *
-     * @var array
-     */
-    private static $valued = array(
-        DocLexer::T_FLOAT => true,
-        DocLexer::T_IDENTIFIER => true,
-        DocLexer::T_INTEGER => true,
-        DocLexer::T_STRING => true,
-    );
 
     /**
      * The active list of values.
@@ -80,65 +47,9 @@ class TokensToArray implements ConvertInterface
     private $values;
 
     /**
-     * {@inheritDoc}
-     */
-    public function convert(array $tokens)
-    {
-        $this->reset($tokens);
-
-        $count = count($tokens);
-
-        for (; $this->offset < $count; $this->offset++) {
-            $this->handle();
-        }
-
-        return $this->result;
-    }
-
-    /**
-     * Removes references to the current annotation and its values.
-     */
-    private function end()
-    {
-        if (empty($this->references)) {
-            unset($this->current);
-            unset($this->values);
-        }
-    }
-
-    /**
-     * Ends accepting values for the current list.
-     */
-    private function endList()
-    {
-        end($this->references);
-
-        $key = key($this->references);
-
-        $this->values =& $this->references[$key];
-
-        unset($this->references[$key]);
-    }
-
-    /**
-     * Ends accepting values for the current annotation.
-     */
-    private function endValues()
-    {
-        end($this->references);
-
-        $key = key($this->references);
-
-        $this->current = &$this->references[$key];
-        $this->values = &$this->current->values;
-
-        unset($this->references[$key]);
-    }
-
-    /**
      * Processes the current token.
      */
-    private function handle()
+    protected function handle()
     {
         $assign = false;
         $token = $this->token($this->offset);
@@ -219,6 +130,61 @@ class TokensToArray implements ConvertInterface
     }
 
     /**
+     * Resets the converter's state.
+     *
+     * @param array $tokens The new tokens.
+     */
+    protected function reset(array $tokens)
+    {
+        $this->current = null;
+        $this->offset = 0;
+        $this->references = array();
+        $this->result = array();
+        $this->tokens = $tokens;
+        $this->values = null;
+    }
+
+    /**
+     * Removes references to the current annotation and its values.
+     */
+    private function end()
+    {
+        if (empty($this->references)) {
+            unset($this->current);
+            unset($this->values);
+        }
+    }
+
+    /**
+     * Ends accepting values for the current list.
+     */
+    private function endList()
+    {
+        end($this->references);
+
+        $key = key($this->references);
+
+        $this->values =& $this->references[$key];
+
+        unset($this->references[$key]);
+    }
+
+    /**
+     * Ends accepting values for the current annotation.
+     */
+    private function endValues()
+    {
+        end($this->references);
+
+        $key = key($this->references);
+
+        $this->current = &$this->references[$key];
+        $this->values = &$this->current->values;
+
+        unset($this->references[$key]);
+    }
+
+    /**
      * Returns the key name if available.
      *
      * @param integer $offset The offset of a possibly assigned value.
@@ -242,21 +208,6 @@ class TokensToArray implements ConvertInterface
         }
 
         return null;
-    }
-
-    /**
-     * Resets the converter's state.
-     *
-     * @param array $tokens The new tokens.
-     */
-    private function reset(array $tokens)
-    {
-        $this->current = null;
-        $this->offset = 0;
-        $this->references = array();
-        $this->result = array();
-        $this->tokens = array_values($tokens);
-        $this->values = null;
     }
 
     /**
@@ -328,37 +279,5 @@ class TokensToArray implements ConvertInterface
     private function startValues()
     {
         $this->values = &$this->current->values;
-    }
-
-    /**
-     * Validates the token at the offset and returns it.
-     *
-     * @param integer $offset The offset.
-     *
-     * @return array The validated token.
-     *
-     * @throws ConvertException If the token is not valid.
-     */
-    private function token($offset)
-    {
-        if (isset($this->tokens[$offset])) {
-            $token = $this->tokens[$offset];
-
-            if (!isset($token[0])) {
-                throw ConvertException::invalidToken($offset);
-            }
-
-            if (isset(self::$valued[$token[0]])
-                && self::$valued[$token[0]]
-                && !isset($token[1])) {
-                throw ConvertException::invalidToken($offset);
-            }
-
-            return $token;
-        }
-
-        // @codeCoverageIgnoreStart
-        return null;
-        // @codeCoverageIgnoreEnd
     }
 }
