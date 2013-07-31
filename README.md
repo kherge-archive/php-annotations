@@ -8,8 +8,10 @@ original Doctrine [Annotations][] library, it is not required that any of the
 annotation classes be loaded, or even present since no class name or constant
 name validation is performed.
 
+The library also provides a way to convert the resulting tokens into an easier
+to use array, or back to a string (with some degree of formatting options).
+
 ```php
-use Herrera\Annotations\Convert;
 use Herrera\Annotations\Tokenizer;
 
 $tokenize = new Tokenizer();
@@ -77,10 +79,6 @@ $tokens = $tokenize->parse($docblock);
  *     array(103)
  * )
  */
-
-echo Convert::toString($tokens);
-
-// @ORM\JoinTable(name="myJoinTable",joinColumns={@ORM\JoinColumn(name="columnA",referencedColumnName="columnB")},inverseJoinColumns={@ORM\JoinColumn(name="columnC",referencedColumnName="columnD",unique=true)})
 ```
 
 Documentation
