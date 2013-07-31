@@ -88,9 +88,8 @@ class TokensToArray implements ConvertInterface
 
         $count = count($tokens);
 
-        for ($i = 0; $i < $count; $i++) {
+        for (; $this->offset < $count; $this->offset++) {
             $this->handle();
-            $this->offset++;
         }
 
         return $this->result;
