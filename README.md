@@ -237,6 +237,7 @@ $string = $toString->convert(
 DOCBLOCK
     )
 );
+```
 
 The result will be similar, but without any of the formatting:
 
