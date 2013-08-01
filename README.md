@@ -279,6 +279,6 @@ STRUNG;
 ```
 
 [Build Status]: https://travis-ci.org/herrera-io/php-annotations.png?branch=master
-[Doctrine annotations]: http://docs.doctrine-project.org/projects/doctrine-common/en/latest/reference/annotations.html
+[Doctrine Annotations]: http://docs.doctrine-project.org/projects/doctrine-common/en/latest/reference/annotations.html
 [Composer]: http://getcomposer.org/
 [token identifiers here]: https://github.com/doctrine/annotations/blob/master/lib/Doctrine/Common/Annotations/DocLexer.php#L35
