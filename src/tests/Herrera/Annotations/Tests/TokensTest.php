@@ -71,6 +71,17 @@ class TokensTest extends TestCase
         );
     }
 
+    public function testGetArray()
+    {
+        $this->assertEquals(
+            array(
+                array(DocLexer::T_AT),
+                array(DocLexer::T_IDENTIFIER, 'test')
+            ),
+            $this->tokens->getArray()
+        );
+    }
+
     public function testGetToken()
     {
         $this->assertEquals(
@@ -118,15 +129,30 @@ class TokensTest extends TestCase
         $tokens->current(0);
     }
 
-    public function testGetArray()
+    /**
+     * @dataProvider getTokenAndValue
+     */
+    public function testGetValue($token, $expected)
     {
-        $this->assertEquals(
+        $tokens = new Tokens(array($token));
+
+        $this->assertSame($expected, $tokens->getValue(0));
+    }
+
+    public function testGetValueNotExpected()
+    {
+        $tokens = new Tokens(
             array(
-                array(DocLexer::T_AT),
-                array(DocLexer::T_IDENTIFIER, 'test')
-            ),
-            $this->tokens->getArray()
+                array(DocLexer::T_AT)
+            )
         );
+
+        $this->setExpectedException(
+            'Herrera\\Annotations\\Exception\\LogicException',
+            'Token #0 (101) is not expected to have a value.'
+        );
+
+        $tokens->getValue(0);
     }
 
     public function testKey()
@@ -209,48 +235,6 @@ class TokensTest extends TestCase
         $this->tokens->next();
 
         $this->assertFalse($this->tokens->valid());
-    }
-
-    /**
-     * @dataProvider getTokenAndValue
-     */
-    public function testValue($token, $expected)
-    {
-        $tokens = new Tokens(array($token));
-
-        $this->assertSame($expected, $tokens->value());
-    }
-
-    public function testValueNotExpected()
-    {
-        $tokens = new Tokens(
-            array(
-                array(DocLexer::T_AT)
-            )
-        );
-
-        $this->setExpectedException(
-            'Herrera\\Annotations\\Exception\\LogicException',
-            'Token #0 (101) is not expected to have a value.'
-        );
-
-        $tokens->value();
-    }
-
-    public function testValueMissing()
-    {
-        $tokens = new Tokens(
-            array(
-                array(DocLexer::T_INTEGER)
-            )
-        );
-
-        $this->setExpectedException(
-            'Herrera\\Annotations\\Exception\\InvalidTokenException',
-            'Token #0 (2) is missing its value.'
-        );
-
-        $tokens->value();
     }
 
     protected function setUp()

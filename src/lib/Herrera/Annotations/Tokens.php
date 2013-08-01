@@ -152,6 +152,44 @@ class Tokens implements ArrayAccess, Countable, Iterator
     }
 
     /**
+     * Returns the processed value of the specified token.
+     *
+     * @param integer $offset The token offset.
+     *
+     * @return mixed The processed value.
+     *
+     * @throws Exception
+     * @throws LogicException If the token is not expected to have a value.
+     */
+    public function getValue($offset)
+    {
+        $token = $this->getToken($offset);
+
+        if (!isset(self::$hasValue[$token[0]])) {
+            throw LogicException::create(
+                'Token #%d (%d) is not expected to have a value.',
+                $offset,
+                $token[0]
+            );
+        }
+
+        switch ($token[0]) {
+            case DocLexer::T_FALSE:
+                return false;
+            case DocLexer::T_FLOAT:
+                return (float) $token[1];
+            case DocLexer::T_INTEGER:
+                return (int) $token[1];
+            case DocLexer::T_STRING:
+                return $token[1];
+            case DocLexer::T_TRUE:
+                return true;
+        }
+
+        return null;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function key()
@@ -230,48 +268,5 @@ class Tokens implements ArrayAccess, Countable, Iterator
     public function valid()
     {
         return isset($this->tokens[$this->offset]);
-    }
-
-    /**
-     * Returns the processed value of the current token.
-     *
-     * @return mixed The processed value.
-     *
-     * @throws Exception
-     * @throws InvalidTokenException If the token is missing its value.
-     * @throws LogicException        If the token is not expected to have a value.
-     */
-    public function value()
-    {
-        if (!isset(self::$hasValue[$this->tokens[$this->offset][0]])) {
-            throw LogicException::create(
-                'Token #%d (%d) is not expected to have a value.',
-                $this->offset,
-                $this->tokens[$this->offset][0]
-            );
-        }
-
-        if (!isset($this->tokens[$this->offset][1])) {
-            throw InvalidTokenException::create(
-                'Token #%d (%d) is missing its value.',
-                $this->offset,
-                $this->tokens[$this->offset][0]
-            );
-        }
-
-        switch ($this->tokens[$this->offset][0]) {
-            case DocLexer::T_FALSE:
-                return false;
-            case DocLexer::T_FLOAT:
-                return (float) $this->tokens[$this->offset][1];
-            case DocLexer::T_INTEGER:
-                return (int) $this->tokens[$this->offset][1];
-            case DocLexer::T_STRING:
-                return $this->tokens[$this->offset][1];
-            case DocLexer::T_TRUE:
-                return true;
-        }
-
-        return null;
     }
 }

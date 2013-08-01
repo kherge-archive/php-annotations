@@ -66,33 +66,13 @@ class ToArray extends AbstractConvert
 
                 break;
             case DocLexer::T_FALSE:
-                $assign = true;
-                $token[1] = false;
-
-                break;
             case DocLexer::T_FLOAT:
-                $assign = true;
-                $token[1] = (float) $token[1];
-
-                break;
             case DocLexer::T_INTEGER:
-                $assign = true;
-                $token[1] = (int) $token[1];
-
-                break;
             case DocLexer::T_NULL:
-                $assign = true;
-                $token[1] = null;
-
-                break;
             case DocLexer::T_STRING:
-                $assign = true;
-
-                break;
             case DocLexer::T_TRUE:
                 $assign = true;
-                $token[1] = true;
-
+                $token[1] = $this->tokens->getValue($offset);
                 break;
             case DocLexer::T_COLON:
             case DocLexer::T_COMMA:
