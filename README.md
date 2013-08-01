@@ -3,7 +3,7 @@ Annotations
 
 [![Build Status][]](https://travis-ci.org/herrera-io/php-annotations)
 
-Annotations is a generalized version of the [Doctrine Annoations][] library.
+Annotations is a generalized version of the [Doctrine Annotations][] library.
 It is designed to work with Doctrine style annotations, but without requiring
 that annotation classes or constants to exist. The library provides a way to
 tokenize annotations and convert them to other formats.
@@ -64,7 +64,7 @@ To tokenize a docblock comment, you will first need to create an instance of
 `Tokenizer`. The object can be re-used to parse as many docblocks as needed:
 
 ```php
-use Herrera\Annotaitons\Tokenizer;
+use Herrera\Annotations\Tokenizer;
 
 $tokenizer = new Tokenizer();
 
@@ -76,7 +76,7 @@ contain a minimum of one value, and a maximum of two. The first value is the
 token's numeric identifier, and the second is the value that came with the
 token.
 
-> You can find a references of the [token identfiers here][].
+> You can find a references of the [token identifiers here][].
 
 This example docblock:
 
