@@ -76,7 +76,7 @@ contain a minimum of one value, and a maximum of two. The first value is the
 token's numeric identifier, and the second is the value that came with the
 token.
 
-> You can find a references of the [token identifiers here][].
+> You can find a reference of the [token identifiers here][].
 
 This example docblock:
 
@@ -104,7 +104,7 @@ Converting
 ----------
 
 Once you have parsed a docblock for its tokens, you may find the need to convert
-the list of tokens into another format. Before I cover the available coverters,
+the list of tokens into another format. Before I cover the available converters,
 I need to show you how to create an instance of `Tokens` and `Sequences` which
 are consumed by the converters.
 
