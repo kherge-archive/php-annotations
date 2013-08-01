@@ -1,0 +1,277 @@
+<?php
+
+namespace Herrera\Annotations;
+
+use ArrayAccess;
+use Countable;
+use Doctrine\Common\Annotations\DocLexer;
+use Herrera\Annotations\Exception\Exception;
+use Herrera\Annotations\Exception\InvalidTokenException;
+use Herrera\Annotations\Exception\LogicException;
+use Herrera\Annotations\Exception\OutOfRangeException;
+use Iterator;
+
+/**
+ * Manages and validates an immutable list of tokens.
+ *
+ * @author Kevin Herrera <kevin@herrera.io>
+ */
+class Tokens implements ArrayAccess, Countable, Iterator
+{
+    /**
+     * The list of tokens that are expected to have a value.
+     *
+     * @var array
+     */
+    private static $hasValue = array(
+        DocLexer::T_FALSE => true,
+        DocLexer::T_FLOAT => true,
+        DocLexer::T_INTEGER => true,
+        DocLexer::T_NULL => true,
+        DocLexer::T_STRING => true,
+        DocLexer::T_TRUE => true,
+    );
+
+    /**
+     * The current offset.
+     *
+     * @var integer
+     */
+    private $offset;
+
+    /**
+     * The list of tokens.
+     *
+     * @var array
+     */
+    private $tokens;
+
+    /**
+     * The list of valid tokens.
+     *
+     * @var array
+     */
+    private static $valid = array(
+        DocLexer::T_NONE => true,
+        DocLexer::T_INTEGER => true,
+        DocLexer::T_STRING => true,
+        DocLexer::T_FLOAT => true,
+        DocLexer::T_IDENTIFIER => true,
+        DocLexer::T_AT => true,
+        DocLexer::T_CLOSE_CURLY_BRACES => true,
+        DocLexer::T_CLOSE_PARENTHESIS => true,
+        DocLexer::T_COMMA => true,
+        DocLexer::T_EQUALS => true,
+        DocLexer::T_FALSE => true,
+        DocLexer::T_NAMESPACE_SEPARATOR => true,
+        DocLexer::T_OPEN_CURLY_BRACES => true,
+        DocLexer::T_OPEN_PARENTHESIS => true,
+        DocLexer::T_TRUE => true,
+        DocLexer::T_NULL => true,
+        DocLexer::T_COLON => true,
+    );
+
+    /**
+     * Sets the list of tokens to manage.
+     *
+     * @param array $tokens The list of tokens.
+     */
+    public function __construct(array $tokens)
+    {
+        $this->offset = 0;
+        $this->tokens = array_values($tokens);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function count()
+    {
+        return count($this->tokens);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function current()
+    {
+        return $this->getToken($this->offset);
+    }
+
+    /**
+     * Returns the array copy of the list of tokens.
+     *
+     * @return array The list of tokens.
+     */
+    public function getArray()
+    {
+        return $this->tokens;
+    }
+
+    /**
+     * Returns the token at the offset, or the default given.
+     *
+     * @param integer $offset  The offset to retrieve.
+     * @param array   $default The default token to return.
+     *
+     * @return array The token, or the default.
+     *
+     * @throws Exception
+     * @throws InvalidTokenException If the token is not valid.
+     */
+    public function getToken($offset, array $default = null)
+    {
+        if (isset($this->tokens[$offset])) {
+            if (!isset($this->tokens[$offset][0])) {
+                throw InvalidTokenException::create(
+                    'Token #%d is missing its token identifier.',
+                    $offset
+                );
+            }
+
+            if (!isset(self::$valid[$this->tokens[$offset][0]])) {
+                throw InvalidTokenException::create(
+                    'Token #%d does not have a valid token identifier.',
+                    $offset
+                );
+            }
+
+            if ((isset(self::$hasValue[$this->tokens[$offset][0]]))
+                && !isset($this->tokens[$offset][1])) {
+                throw InvalidTokenException::create(
+                    'Token #%d (%d) is missing its value.',
+                    $offset,
+                    $this->tokens[$offset][0]
+                );
+            }
+
+            return $this->tokens[$offset];
+        }
+
+        return $default;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function key()
+    {
+        return $this->offset;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function next()
+    {
+        $this->offset++;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function offsetExists($offset)
+    {
+        return isset($this->tokens[$offset]);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws OutOfRangeException If the offset is invalid.
+     */
+    public function offsetGet($offset)
+    {
+        if (null === ($token = $this->getToken($offset))) {
+            throw OutOfRangeException::create(
+                'No value is set at offset %d.',
+                $offset
+            );
+        }
+
+        return $token;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws LogicException If called.
+     */
+    public function offsetSet($offset, $value)
+    {
+        throw LogicException::create(
+            'New values cannot be added to the list of tokens.'
+        );
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws LogicException If called.
+     */
+    public function offsetUnset($offset)
+    {
+        throw Logicexception::create(
+            'Existing tokens cannot be removed from the list of tokens.'
+        );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function rewind()
+    {
+        $this->offset = 0;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function valid()
+    {
+        return isset($this->tokens[$this->offset]);
+    }
+
+    /**
+     * Returns the processed value of the current token.
+     *
+     * @return mixed The processed value.
+     *
+     * @throws Exception
+     * @throws InvalidTokenException If the token is missing its value.
+     * @throws LogicException        If the token is not expected to have a value.
+     */
+    public function value()
+    {
+        if (!isset(self::$hasValue[$this->tokens[$this->offset][0]])) {
+            throw LogicException::create(
+                'Token #%d (%d) is not expected to have a value.',
+                $this->offset,
+                $this->tokens[$this->offset][0]
+            );
+        }
+
+        if (!isset($this->tokens[$this->offset][1])) {
+            throw InvalidTokenException::create(
+                'Token #%d (%d) is missing its value.',
+                $this->offset,
+                $this->tokens[$this->offset][0]
+            );
+        }
+
+        switch ($this->tokens[$this->offset][0]) {
+            case DocLexer::T_FALSE:
+                return false;
+            case DocLexer::T_FLOAT:
+                return (float) $this->tokens[$this->offset][1];
+            case DocLexer::T_INTEGER:
+                return (int) $this->tokens[$this->offset][1];
+            case DocLexer::T_STRING:
+                return $this->tokens[$this->offset][1];
+            case DocLexer::T_TRUE:
+                return true;
+        }
+
+        return null;
+    }
+}

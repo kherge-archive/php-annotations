@@ -1,6 +1,6 @@
 <?php
 
-namespace Herrera\Annotations\Tests\Exception;
+namespace Herrera\Annotations\Tests;
 
 use Doctrine\Common\Annotations\DocLexer;
 use Herrera\Annotations\Exception\SyntaxException;
@@ -8,9 +8,9 @@ use Herrera\PHPUnit\TestCase;
 
 class SyntaxExceptionTest extends TestCase
 {
-    public function testCreate()
+    public function testExpectedToken()
     {
-        $exception = SyntaxException::create('test');
+        $exception = SyntaxException::expectedToken('test');
 
         $this->assertEquals(
             'Expected test, received end of string.',
@@ -18,9 +18,9 @@ class SyntaxExceptionTest extends TestCase
         );
     }
 
-    public function testCreateWithToken()
+    public function testExpectedTokenWithToken()
     {
-        $exception = SyntaxException::create(
+        $exception = SyntaxException::expectedToken(
             'test',
             array(
                 'position' => 123,
@@ -34,7 +34,7 @@ class SyntaxExceptionTest extends TestCase
         );
     }
 
-    public function testCreateWithLookahead()
+    public function testExpectedTokenWithLookahead()
     {
         $lexer = new DocLexer();
         $lexer->lookahead = array(
@@ -42,7 +42,7 @@ class SyntaxExceptionTest extends TestCase
             'value' => 'abc',
         );
 
-        $exception = SyntaxException::create('test', null, $lexer);
+        $exception = SyntaxException::expectedToken('test', null, $lexer);
 
         $this->assertEquals(
             'Expected test, received \'abc\' at position 123.',

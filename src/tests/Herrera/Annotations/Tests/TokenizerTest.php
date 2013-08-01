@@ -11,7 +11,7 @@ class TokenizerTest extends TestCase
     /**
      * @var Tokenizer
      */
-    private $tokenize;
+    private $tokenizer;
 
     public function getDocblocks()
     {
@@ -371,7 +371,7 @@ DOCBLOCK
     {
         $this->assertInstanceOf(
             'Doctrine\\Common\\Annotations\\DocLexer',
-            $this->getPropertyValue($this->tokenize, 'lexer')
+            $this->getPropertyValue($this->tokenizer, 'lexer')
         );
     }
 
@@ -381,12 +381,12 @@ DOCBLOCK
     public function testParse($docblock, $tokens, $ignored)
     {
         if ($ignored) {
-            $this->setPropertyValue($this->tokenize, 'ignored', $ignored);
+            $this->setPropertyValue($this->tokenizer, 'ignored', $ignored);
         }
 
         $this->assertSame(
             $tokens,
-            $this->tokenize->parse($docblock)
+            $this->tokenizer->parse($docblock)
         );
     }
 
@@ -397,9 +397,9 @@ DOCBLOCK
             'Expected Value, received \'@\' at position 5.'
         );
 
-        $this->tokenize->ignore(array('ignored'));
+        $this->tokenizer->ignore(array('ignored'));
 
-        $this->tokenize->parse('/**@a(1,@ignored)*/');
+        $this->tokenizer->parse('/**@a(1,@ignored)*/');
     }
 
     public function testParseInvalidIdentifier()
@@ -409,7 +409,7 @@ DOCBLOCK
             'Expected namespace separator or identifier, received \'\\\' at position 1.'
         );
 
-        $this->tokenize->parse('/**@\\*/');
+        $this->tokenizer->parse('/**@\\*/');
     }
 
     public function testParseInvalidPlainValue()
@@ -419,7 +419,7 @@ DOCBLOCK
             'Expected PlainValue, received \'!\' at position 3.'
         );
 
-        $this->tokenize->parse('/**@a(!)*/');
+        $this->tokenizer->parse('/**@a(!)*/');
     }
 
     public function testParseInvalidMatch()
@@ -429,7 +429,7 @@ DOCBLOCK
             'Expected Doctrine\\Common\\Annotations\\DocLexer::T_CLOSE_CURLY_BRACES, received \')\' at position 5.'
         );
 
-        $this->tokenize->parse('/**@a({x)');
+        $this->tokenizer->parse('/**@a({x)');
     }
 
     public function testParseInvalidMatchAny()
@@ -439,7 +439,7 @@ DOCBLOCK
             'Expected Doctrine\\Common\\Annotations\\DocLexer::T_INTEGER or Doctrine\\Common\\Annotations\\DocLexer::T_STRING, received \'@\' at position 4.'
         );
 
-        $this->tokenize->parse('/**@a({@:1})');
+        $this->tokenizer->parse('/**@a({@:1})');
     }
 
     public function testIgnored()
@@ -449,16 +449,16 @@ DOCBLOCK
             'def',
         );
 
-        $this->tokenize->ignore($ignore);
+        $this->tokenizer->ignore($ignore);
 
         $this->assertEquals(
             $ignore,
-            $this->getPropertyValue($this->tokenize, 'ignored')
+            $this->getPropertyValue($this->tokenizer, 'ignored')
         );
     }
 
     protected function setUp()
     {
-        $this->tokenize = new Tokenizer();
+        $this->tokenizer = new Tokenizer();
     }
 }

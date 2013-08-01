@@ -3,14 +3,14 @@
 namespace Herrera\Annotations\Convert;
 
 use Doctrine\Common\Annotations\DocLexer;
-use Herrera\Annotations\Exception\ConvertException;
+use Herrera\Annotations\Tokens;
 
 /**
- * Converts a list of tokens into their string representation.
+ * Converts a series of tokens into a string representation.
  *
  * @author Kevin Herrera <kevin@herrera.io>
  */
-class TokensToString extends AbstractConverter
+class ToString extends AbstractConvert
 {
     /**
      * The line break character(s).
@@ -69,7 +69,7 @@ class TokensToString extends AbstractConverter
      *
      * @param string $break The character(s).
      *
-     * @return TokensToString The converter.
+     * @return ToString The converter.
      */
     public function setBreakChar($break)
     {
@@ -83,7 +83,7 @@ class TokensToString extends AbstractConverter
      *
      * @param string $char The character.
      *
-     * @return TokensToString The converter.
+     * @return ToString The converter.
      */
     public function setIndentChar($char)
     {
@@ -97,7 +97,7 @@ class TokensToString extends AbstractConverter
      *
      * @param integer $size The size.
      *
-     * @return TokensToString The converter.
+     * @return ToString The converter.
      */
     public function setIndentSize($size)
     {
@@ -111,7 +111,7 @@ class TokensToString extends AbstractConverter
      *
      * @param boolean $space Add the space?
      *
-     * @return TokensToString The converter.
+     * @return ToString The converter.
      */
     public function useColonSpace($space)
     {
@@ -125,7 +125,8 @@ class TokensToString extends AbstractConverter
      */
     protected function handle()
     {
-        $token = $this->token($this->offset);
+        $offset = $this->tokens->key();
+        $token = $this->tokens->current();
 
         // increase indent level if opening a values list
         if ((DocLexer::T_OPEN_CURLY_BRACES === $token[0])
@@ -135,7 +136,7 @@ class TokensToString extends AbstractConverter
             // decrease indent level if closing values list
         } elseif ((DocLexer::T_CLOSE_CURLY_BRACES === $token[0])
             || (DocLexer::T_CLOSE_PARENTHESIS === $token[0])) {
-            $past = $this->token($this->offset - 1);
+            $past = $this->tokens->getToken($offset - 1);
 
             // indent if level > 0
             if ((0 < $this->level--)
@@ -145,7 +146,7 @@ class TokensToString extends AbstractConverter
             }
 
             // indent of a comma preceded this token
-        } elseif ((null !== ($past = $this->token($this->offset - 1)))
+        } elseif ((null !== ($past = $this->tokens->getToken($offset - 1)))
             && (DocLexer::T_COMMA === $past[0])) {
             $this->indent($this->result);
         }
@@ -175,21 +176,9 @@ class TokensToString extends AbstractConverter
 
                 // no break
 
-            // map characters using a table
+                // map characters using a table
             default:
-                if (!isset(self::$map[$token[0]])) {
-                    throw ConvertException::unrecognizedToken($token[0]);
-                }
-
                 $this->result .= self::$map[$token[0]];
-
-                $open = $this->token($this->offset - 1);
-                $open = ((DocLexer::T_OPEN_CURLY_BRACES === $open[0])
-                            || (DocLexer::T_OPEN_PARENTHESIS === $open[0]));
-
-                $close = $this->token($this->offset + 1);
-                $close = ((DocLexer::T_CLOSE_CURLY_BRACES === $close[0])
-                            || (DocLexer::T_CLOSE_PARENTHESIS === $close[0]));
 
                 // add the colon space, if required
                 if ($this->space && (DocLexer::T_COLON === $token[0])) {
@@ -198,7 +187,7 @@ class TokensToString extends AbstractConverter
                     // indent after starting a values list
                 } elseif ((DocLexer::T_OPEN_PARENTHESIS === $token[0])
                     || (DocLexer::T_OPEN_CURLY_BRACES === $token[0])) {
-                    $next = $this->token($this->offset + 1);
+                    $next = $this->tokens->getToken($offset + 1);
 
                     if ((DocLexer::T_CLOSE_CURLY_BRACES !== $next[0])
                         && (DocLexer::T_CLOSE_PARENTHESIS !== $next[0])) {
@@ -209,16 +198,13 @@ class TokensToString extends AbstractConverter
     }
 
     /**
-     * Resets the converter's state.
-     *
-     * @param array $tokens The new tokens.
+     * {@inheritDoc}
      */
-    protected function reset(array $tokens)
+    protected function reset(Tokens $tokens)
     {
         $this->level = 0;
-        $this->offset = 0;
         $this->result = '';
-        $this->tokens = array_values($tokens);
+        $this->tokens = $tokens;
     }
 
     /**

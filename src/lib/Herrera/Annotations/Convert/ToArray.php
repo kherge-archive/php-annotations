@@ -3,27 +3,15 @@
 namespace Herrera\Annotations\Convert;
 
 use Doctrine\Common\Annotations\DocLexer;
-use Herrera\Annotations\Exception\ConvertException;
+use Herrera\Annotations\Exception\UnexpectedTokenException;
+use Herrera\Annotations\Tokens;
 
 /**
- * Converts a list of tokens into an easy to use PHP array.
- *
- * This is the basic structure of the resulting array:
- *
- * ```
- * array(
- *     (object) array(
- *         'name' => 'The\\Annotation\\Name',
- *         'values' => array(
- *             // the values in the annotation: (1,something=2,@etc)
- *         )
- *     )
- * )
- * ```
+ * Converts a series of tokens into a simple array.
  *
  * @author Kevin Herrera <kevin@herrera.io>
  */
-class TokensToArray extends AbstractConverter
+class ToArray extends AbstractConvert
 {
     /**
      * The currently active annotation.
@@ -40,19 +28,20 @@ class TokensToArray extends AbstractConverter
     private $references;
 
     /**
-     * The active list of values.
+     * The active list of values reference.
      *
      * @var array
      */
     private $values;
 
     /**
-     * Processes the current token.
+     * {@inheritDoc}
      */
     protected function handle()
     {
         $assign = false;
-        $token = $this->token($this->offset);
+        $offset = $this->tokens->key();
+        $token = $this->tokens->current();
 
         switch ($token[0]) {
             case DocLexer::T_AT:
@@ -115,33 +104,18 @@ class TokensToArray extends AbstractConverter
         if ($assign) {
 
             // make sure the value isn't actually a key
-            if ((null !== ($op = $this->token($this->offset + 1)))
+            if ((null !== ($op = $this->tokens->getToken($offset + 1)))
                 && (DocLexer::T_COLON !== $op[0])
                 && (DocLexer::T_EQUALS !== $op[0])) {
 
                 // check if the value is set using a key.
-                if (null !== ($key = $this->key($this->offset))) {
+                if (null !== ($key = $this->key($offset))) {
                     $this->values[$key] = $token[1];
                 } else {
                     $this->values[] = $token[1];
                 }
             }
         }
-    }
-
-    /**
-     * Resets the converter's state.
-     *
-     * @param array $tokens The new tokens.
-     */
-    protected function reset(array $tokens)
-    {
-        $this->current = null;
-        $this->offset = 0;
-        $this->references = array();
-        $this->result = array();
-        $this->tokens = $tokens;
-        $this->values = null;
     }
 
     /**
@@ -194,8 +168,8 @@ class TokensToArray extends AbstractConverter
     private function key($offset)
     {
         // get the "key" and assignment operator
-        $op = $this->token($offset - 1);
-        $key = $this->token($offset - 2);
+        $op = $this->tokens->getToken($offset - 1);
+        $key = $this->tokens->getToken($offset - 2);
 
         // do we have both?
         if ($op && $key) {
@@ -211,18 +185,33 @@ class TokensToArray extends AbstractConverter
     }
 
     /**
+     * {@inheritDoc}
+     */
+    protected function reset(Tokens $tokens)
+    {
+        unset($this->current);
+        unset($this->values);
+
+        $this->current = null;
+        $this->references = array();
+        $this->result = array();
+        $this->tokens = $tokens;
+        $this->values = null;
+    }
+
+    /**
      * Begins a new annotation.
      */
     private function start()
     {
         // make sure we have its name
-        if ((null === ($name = $this->token($this->offset + 1)))
+        $name = $this->tokens->getToken($this->tokens->key() + 1);
+
+        if ((null === $name)
             || (DocLexer::T_IDENTIFIER !== $name[0])) {
-            throw new ConvertException(
-                sprintf(
-                    'The annotation (beginning at %d) is missing its identifier.',
-                    $this->offset
-                )
+            throw UnexpectedTokenException::create(
+                'The annotation (beginning at %d) is missing its identifier.',
+                $this->tokens->key()
             );
         }
 
@@ -235,7 +224,7 @@ class TokensToArray extends AbstractConverter
         if ($this->current) {
 
             // if set using a key, use the key
-            if (null !== ($key = $this->key($this->offset))) {
+            if (null !== ($key = $this->key($this->tokens->key()))) {
                 $this->values[$key] = $new;
             } else {
                 $this->values[] = $new;
@@ -257,7 +246,7 @@ class TokensToArray extends AbstractConverter
     private function startList()
     {
         // if the list is set using a key, use it
-        if (null !== ($key = $this->key($this->offset))) {
+        if (null !== ($key = $this->key($this->tokens->key()))) {
             $this->values[$key] = array();
             $this->references[] = &$this->values;
             $this->values = &$this->values[$key];

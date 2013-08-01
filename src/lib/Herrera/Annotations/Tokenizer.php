@@ -3,6 +3,7 @@
 namespace Herrera\Annotations;
 
 use Doctrine\Common\Annotations\DocLexer;
+use Herrera\Annotations\Exception\Exception;
 use Herrera\Annotations\Exception\SyntaxException;
 
 /**
@@ -314,6 +315,7 @@ class Tokenizer
      *
      * @return string The identifier.
      *
+     * @throws Exception
      * @throws SyntaxException If a syntax error is found.
      */
     private function getIdentifier()
@@ -324,7 +326,7 @@ class Tokenizer
 
             $name = $this->lexer->token['value'];
         } else {
-            throw SyntaxException::create(
+            throw SyntaxException::expectedToken(
                 'namespace separator or identifier',
                 null,
                 $this->lexer
@@ -351,6 +353,7 @@ class Tokenizer
      *
      * @return array The tokens.
      *
+     * @throws Exception
      * @throws SyntaxException If a syntax error is found.
      */
     private function getPlainValue()
@@ -389,7 +392,7 @@ class Tokenizer
 
                 break;
             default:
-                throw SyntaxException::create(
+                throw SyntaxException::expectedToken(
                     'PlainValue',
                     null,
                     $this->lexer
@@ -421,6 +424,7 @@ class Tokenizer
      *
      * @return array The tokens.
      *
+     * @throws Exception
      * @throws SyntaxException If a syntax error is found.
      */
     private function getValues()
@@ -461,7 +465,7 @@ class Tokenizer
 
             // no multiple trailing commas
             if (empty($value)) {
-                throw SyntaxException::create('Value', $token);
+                throw SyntaxException::expectedToken('Value', $token);
             }
 
             $tokens = array_merge($tokens, $value);
@@ -482,12 +486,13 @@ class Tokenizer
      *
      * @return array|null TRUE if the next token matches, FALSE if not.
      *
+     * @throws Exception
      * @throws SyntaxException If a syntax error is found.
      */
     private function match($token)
     {
         if (!$this->lexer->isNextToken($token)) {
-            throw SyntaxException::create(
+            throw SyntaxException::expectedToken(
                 $this->lexer->getLiteral($token),
                 null,
                 $this->lexer
@@ -504,12 +509,13 @@ class Tokenizer
      *
      * @return boolean TRUE if the next token matches, FALSE if not.
      *
+     * @throws Exception
      * @throws SyntaxException If a syntax error is found.
      */
     private function matchAny(array $tokens)
     {
         if (!$this->lexer->isNextTokenAny($tokens)) {
-            throw SyntaxException::create(
+            throw SyntaxException::expectedToken(
                 implode(
                     ' or ',
                     array_map(array($this->lexer, 'getLiteral'), $tokens)

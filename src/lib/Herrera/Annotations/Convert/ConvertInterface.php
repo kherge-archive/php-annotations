@@ -2,23 +2,21 @@
 
 namespace Herrera\Annotations\Convert;
 
-use Herrera\Annotations\Exception\ConvertException;
+use Herrera\Annotations\Tokens;
 
 /**
- * Defines how a converting class must be implemented.
+ * Defines how a converter class must be implemented.
  *
  * @author Kevin Herrera <kevin@herrera.io>
  */
 interface ConvertInterface
 {
     /**
-     * Returns the converted result for the list of tokens.
+     * Converts the list of tokens and returns the result.
      *
-     * @param array $tokens The list of tokens.
+     * @param Tokens $tokens The list of tokens.
      *
-     * @return mixed The converted result.
-     *
-     * @throws ConvertException If the tokens could not be converted.
+     * @return mixed The result.
      */
-    public function convert(array $tokens);
+    public function convert(Tokens $tokens);
 }

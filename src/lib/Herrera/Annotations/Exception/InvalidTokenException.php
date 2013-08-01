@@ -3,10 +3,10 @@
 namespace Herrera\Annotations\Exception;
 
 /**
- * Indicates that the exception came from this library.
+ * This exception is thrown when an invalid token is used.
  *
  * @author Kevin Herrera <kevin@herrera.io>
  */
-interface ExceptionInterface
+class InvalidTokenException extends Exception
 {
 }
