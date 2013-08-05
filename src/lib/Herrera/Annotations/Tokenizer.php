@@ -19,6 +19,13 @@ use Herrera\Annotations\Exception\SyntaxException;
 class Tokenizer
 {
     /**
+     * The namespace aliases.
+     *
+     * @var array
+     */
+    private $aliases = array();
+
+    /**
      * The list of valid class identifier.
      *
      * @var array
@@ -55,11 +62,12 @@ class Tokenizer
     /**
      * Parses the docblock and returns its annotation tokens.
      *
-     * @param string $input The docblock.
+     * @param string $input   The docblock.
+     * @param array  $aliases The namespace aliases.
      *
      * @return array The list of tokens.
      */
-    public function parse($input)
+    public function parse($input, array $aliases = array())
     {
         if (false == ($position = strpos($input, '@'))) {
             return array();
@@ -71,6 +79,8 @@ class Tokenizer
 
         $input = substr($input, $position);
         $input = trim($input, '*/ ');
+
+        $this->aliases = $aliases;
 
         $this->lexer->setInput($input);
         $this->lexer->moveNext();
@@ -103,6 +113,19 @@ class Tokenizer
         // skip if necessary
         if (in_array($identifier, $this->ignored)) {
             return null;
+        }
+
+        // use alias if applicable
+        if (false !== ($pos = strpos($identifier, '\\'))) {
+            $alias = substr($identifier, 0, $pos);
+
+            if (isset($this->aliases[$alias])) {
+                $identifier = $this->aliases[$alias]
+                            . '\\'
+                            . substr($identifier, $pos + 1);
+            }
+        } elseif (isset($this->aliases[$identifier])) {
+            $identifier = $this->aliases[$identifier];
         }
 
         // return the @, name, and any values found

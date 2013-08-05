@@ -71,7 +71,29 @@ use Herrera\Annotations\Tokenizer;
 
 $tokenizer = new Tokenizer();
 
-$parsed = $tokenizer->parse($docblock);
+$aliases = array('ORM' => 'Doctrine\\ORM\\Mapping');
+
+$parsed = $tokenizer->parse($docblock, $aliases);
+```
+
+The `$aliases` argument allows you to specify a list of aliases that may
+have been used for the name of the annotation. For example. it is common
+practice to shorten the name of Doctrine ORM annotations using the following:
+
+```php
+use Doctrine\ORM\Mapping as ORM;
+```
+
+The `$aliases` example demonstrates how only the `ORM` namespace alias will
+be mapped to `Doctrine\ORM\Mapping`. Additional aliases can be specified at
+the same time:
+
+```php
+$aliases = array(
+    'Assert' => 'Symfony\Component\Validator\Constraints',
+    'ORM' => 'Doctrine\ORM\Mapping',
+    'Route' => 'Sensio\Bundle\FrameworkExtraBundle\Configuration\Route',
+);
 ```
 
 The value of `$parsed` is an array of arrays. Each array in `$parsed` will
@@ -94,7 +116,7 @@ will yield the following tokens in `$tokens`:
 ```php
 $parsed = array(
     array(DocLexer::T_AT),
-    array(DocLexer::T_IDENTIFIER, 'ORM\\Column'),
+    array(DocLexer::T_IDENTIFIER, 'Doctrine\\ORM\\Mapping\\Column'),
     array(DocLexer::T_OPEN_PARENTHESIS),
     array(DocLexer::T_IDENTIFIER, 'name'),
     array(DocLexer::T_EQUALS),

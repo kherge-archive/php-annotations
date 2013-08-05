@@ -92,6 +92,29 @@ DOCBLOCK
             array(
                 <<<DOCBLOCK
 /**
+ * @simple()
+ * @simple\\aliased()
+ */
+DOCBLOCK
+                ,
+                array(
+                    array(DocLexer::T_AT),
+                    array(DocLexer::T_IDENTIFIER, 'Very\\Simple'),
+                    array(DocLexer::T_OPEN_PARENTHESIS),
+                    array(DocLexer::T_CLOSE_PARENTHESIS),
+                    array(DocLexer::T_AT),
+                    array(DocLexer::T_IDENTIFIER, 'Very\\Simple\\aliased'),
+                    array(DocLexer::T_OPEN_PARENTHESIS),
+                    array(DocLexer::T_CLOSE_PARENTHESIS),
+                ),
+                array(),
+                array(
+                    'simple' => 'Very\\Simple'
+                ),
+            ),
+            array(
+                <<<DOCBLOCK
+/**
  * @\\simple\\ simple()
  */
 DOCBLOCK
@@ -378,7 +401,7 @@ DOCBLOCK
     /**
      * @dataProvider getDocblocks
      */
-    public function testParse($docblock, $tokens, $ignored)
+    public function testParse($docblock, $tokens, $ignored, array $aliases = array())
     {
         if ($ignored) {
             $this->setPropertyValue($this->tokenizer, 'ignored', $ignored);
@@ -386,7 +409,7 @@ DOCBLOCK
 
         $this->assertSame(
             $tokens,
-            $this->tokenizer->parse($docblock)
+            $this->tokenizer->parse($docblock, $aliases)
         );
     }
 
