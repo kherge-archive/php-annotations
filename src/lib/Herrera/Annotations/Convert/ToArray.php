@@ -201,7 +201,7 @@ class ToArray extends AbstractConvert
         );
 
         // if we have an existing one, make it nested
-        if ($this->current) {
+        if ($this->current && (null !== $this->values)) {
 
             // if set using a key, use the key
             if (null !== ($key = $this->key($this->tokens->key()))) {

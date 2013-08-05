@@ -55,6 +55,25 @@ class ToArrayTest extends TestCase
             array(
                 array(
                     array(DocLexer::T_AT),
+                    array(DocLexer::T_IDENTIFIER, 'simple1'),
+                    array(DocLexer::T_AT),
+                    array(DocLexer::T_IDENTIFIER, 'simple2'),
+                ),
+                array(
+                    (object) array(
+                        'name' => 'simple1',
+                        'values' => array(),
+                    ),
+                    (object) array(
+                        'name' => 'simple2',
+                        'values' => array(),
+                    )
+                )
+            ),
+
+            array(
+                array(
+                    array(DocLexer::T_AT),
                     array(DocLexer::T_IDENTIFIER, 'a'),
                     array(DocLexer::T_OPEN_PARENTHESIS),
                     array(DocLexer::T_STRING, 'value'),
@@ -389,7 +408,7 @@ class ToArrayTest extends TestCase
     {
         $this->assertEquals(
             $expected,
-            $this->converter->convert(new Sequence($tokens))
+            $actual = $this->converter->convert(new Sequence($tokens))
         );
     }
 
