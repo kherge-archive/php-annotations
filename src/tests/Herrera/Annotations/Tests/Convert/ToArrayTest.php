@@ -408,7 +408,7 @@ class ToArrayTest extends TestCase
     {
         $this->assertEquals(
             $expected,
-            $actual = $this->converter->convert(new Sequence($tokens))
+            $this->converter->convert(new Sequence($tokens))
         );
     }
 
