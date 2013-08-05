@@ -99,6 +99,21 @@ class ToArray extends AbstractConvert
     }
 
     /**
+     * {@inheritDoc}
+     */
+    protected function reset(Tokens $tokens)
+    {
+        unset($this->current);
+        unset($this->values);
+
+        $this->current = null;
+        $this->references = array();
+        $this->result = array();
+        $this->tokens = $tokens;
+        $this->values = null;
+    }
+
+    /**
      * Removes references to the current annotation and its values.
      */
     private function end()
@@ -162,21 +177,6 @@ class ToArray extends AbstractConvert
         }
 
         return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function reset(Tokens $tokens)
-    {
-        unset($this->current);
-        unset($this->values);
-
-        $this->current = null;
-        $this->references = array();
-        $this->result = array();
-        $this->tokens = $tokens;
-        $this->values = null;
     }
 
     /**
