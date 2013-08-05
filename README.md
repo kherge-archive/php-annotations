@@ -5,7 +5,7 @@ Annotations
 
 Annotations is a generalized version of the [Doctrine Annotations][] library.
 It is designed to work with Doctrine style annotations, but without requiring
-that annotation classes or constants to exist. The library provides a way to
+that annotation classes or constants exist. The library provides a way to
 tokenize annotations and convert them to other formats.
 
 > The `DocLexer` class from the Doctrine Annotations library is used.
@@ -23,7 +23,8 @@ $tokens = $tokenizer->parse(
  * @My\Annotation(
  *     a="string value",
  *     @Nested,
- *     {"a list"}
+ *     {"a list"},
+ *     A_CONSTANT
  * )
  */
 DOCBLOCK
@@ -42,6 +43,8 @@ DOCBLOCK
  *     array(DocLexer::T_IDENTIFIER, 'Nested'),
  *     array(DocLexer::T_OPEN_CURLY_BRACES),
  *     array(DocLexer::T_STRING, 'a list'),
+ *     array(DocLexer::T_COMMA),
+ *     array(DocLexer::T_IDENTIFIER, 'A_CONSTANT'),
  *     array(DocLexer::T_CLOSE_CURLY_BRACES),
  *     array(DocLexer::T_CLOSE_PARENTHESIS)
  * )
@@ -105,21 +108,21 @@ Converting
 
 Once you have parsed a docblock for its tokens, you may find the need to convert
 the list of tokens into another format. Before I cover the available converters,
-I need to show you how to create an instance of `Tokens` and `Sequences` which
+I need to show you how to create an instance of `Tokens` and `Sequence` which
 are consumed by the converters.
 
-### Tokens and Sequences
+### Tokens and Sequence
 
-Converters use either the `Tokens` or `Sequences` class when converting a list
+Converters use either the `Tokens` or `Sequence` class when converting a list
 of tokens into an alternative format. The `Tokens` class acts like an array,
-but it will also validate the tokens as they are being used. The `Sequences`
+but it will also validate the tokens as they are being used. The `Sequence`
 class is an extension of `Tokens`, but it also validates the order in which
 the tokens are used.
 
 The converters only require that you use `Tokens`, but they are compatible
-with the `Sequences` class as well. The only time you may find need for the
-`Sequences` class is for debugging annotation issues, or if you are accepting
-tokens from anything beside the `Tokenizer` class.
+with the `Sequence` class as well. The only time you may find need for the
+`Sequence` class is for debugging annotation issues, or if you are accepting
+tokens from anything besides the `Tokenizer` class.
 
 Creating an instance of either class is very simple:
 
@@ -129,7 +132,7 @@ use Herrera\Annotations\Tokens;
 
 $tokens = new Tokens($parsed);
 $sequence = new Sequence($parsed);
-$sequence = new Sequence($tokens); // also accepts Tokens object
+$sequence = new Sequence($tokens); // also accepts a Tokens object
 ```
 
 ### To Array
@@ -153,7 +156,8 @@ The following example:
 
 ```php
 $array = $toArray->convert(
-    $tokenizer->parse(
+    new Tokens (
+        $tokenizer->parse(
         <<<DOCBLOCK
 /**
  * @Annotation\A("Just a simple value.")
@@ -169,6 +173,7 @@ $array = $toArray->convert(
  * )
  */
 DOCBLOCK
+        )
     )
 );
 ```
@@ -200,6 +205,10 @@ $array = array(
         )
     ),
 );
+
+echo $array[0]->name;  // "Annotation\A"
+echo $array[0]->values[0]; // "Just a simple value."
+echo $array[1]->values['nested']->name; // "Annotation"
 ```
 
 ### To String
@@ -219,7 +228,8 @@ Using this example:
 
 ```php
 $string = $toString->convert(
-    $tokenizer->parse(
+    new Tokens(
+        $tokenizer->parse(
         <<<DOCBLOCK
 /**
  * @Annotation\A("Just a simple value.")
@@ -235,6 +245,7 @@ $string = $toString->convert(
  * )
  */
 DOCBLOCK
+        )
     )
 );
 ```
