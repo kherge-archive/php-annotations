@@ -34,6 +34,7 @@ class Sequence extends Tokens
             DocLexer::T_COLON => true,
             DocLexer::T_COMMA => true,
             DocLexer::T_EQUALS => true,
+            DocLexer::T_IDENTIFIER => DocLexer::T_AT,
             DocLexer::T_OPEN_CURLY_BRACES => true,
             DocLexer::T_OPEN_PARENTHESIS => true,
         ),
@@ -130,7 +131,7 @@ class Sequence extends Tokens
             DocLexer::T_OPEN_PARENTHESIS => true,
         ),
         DocLexer::T_OPEN_PARENTHESIS => array(
-            DocLexer::T_IDENTIFIER => true,
+            DocLexer::T_IDENTIFIER => DocLexer::T_AT,
         ),
         DocLexer::T_STRING => array(
             DocLexer::T_COLON => true,
@@ -183,12 +184,15 @@ class Sequence extends Tokens
                 ? $this[$offset - 1]
                 : null;
 
+        // is it an unused token?
         if (false === self::$sequences[$token[0]]) {
             throw UnexpectedTokenException::create(
                 'Token #%d (%d) is not used by this library.',
                 $offset,
                 $token[0]
             );
+
+            // not in the list of expected tokens?
         } elseif ((empty($before) && (DocLexer::T_AT !== $token[0]))
             || ($before && !isset(self::$sequences[$token[0]][$before[0]]))) {
             throw UnexpectedTokenException::create(
@@ -196,6 +200,22 @@ class Sequence extends Tokens
                 $offset,
                 $token[0]
             );
+
+            // before token has another before requirement?
+        } elseif (isset(self::$sequences[$token[0]][$before[0]])
+            && (true !== self::$sequences[$token[0]][$before[0]])) {
+            $ancestor = isset($this[$offset - 2])
+                      ? $this[$offset - 2]
+                      : null;
+
+            if (!$ancestor
+                || ($ancestor[0] !== self::$sequences[$token[0]][$before[0]])) {
+                throw UnexpectedTokenException::create(
+                    'Token #%d (%d) is not expected here.',
+                    $offset,
+                    $token[0]
+                );
+            }
         }
 
         return $token;
