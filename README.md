@@ -355,7 +355,7 @@ echo $doc->saveXML();
 
 will result in the following XML:
 
-```php
+```xml
 <?xml version="1.0"?>
 <annotations>
   <annotation name="Annotation\A">
