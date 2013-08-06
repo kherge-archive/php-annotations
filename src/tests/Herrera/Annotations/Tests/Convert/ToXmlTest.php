@@ -380,6 +380,8 @@ XML
                     array(DocLexer::T_STRING, '!'),
                     array(DocLexer::T_CLOSE_PARENTHESIS),
                     array(DocLexer::T_CLOSE_CURLY_BRACES),
+                    array(DocLexer::T_COMMA),
+                    array(DocLexer::T_IDENTIFIER, 'SOME_CONSTANT'),
                     array(DocLexer::T_CLOSE_PARENTHESIS),
                 ),
                 <<<XML
@@ -396,6 +398,7 @@ XML
         <value type="string">!</value>
       </annotation>
     </values>
+    <value type="constant">SOME_CONSTANT</value>
   </annotation>
 </annotations>
 

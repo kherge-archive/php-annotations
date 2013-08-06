@@ -74,6 +74,7 @@ class ToXml extends AbstractConvert
                 break;
             case DocLexer::T_FALSE:
             case DocLexer::T_FLOAT:
+            case DocLexer::T_IDENTIFIER:
             case DocLexer::T_INTEGER:
             case DocLexer::T_NULL:
             case DocLexer::T_STRING:
@@ -236,6 +237,8 @@ class ToXml extends AbstractConvert
             'name',
             $this->tokens->getValue($offset + 1)
         );
+
+        $this->tokens->next();
 
         // append to list, if applicable
         if ($this->depth) {
