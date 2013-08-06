@@ -375,6 +375,16 @@ will result in the following XML:
 
 ```
 
+You can also validate annotation XML using `ToXml::validate($input)`, where
+`$input` can be an XML string or an instance of `DOMDocument`. If you only
+ need access to the XML schema, you can get the file path using the class
+ constant `ToXml::SCHEMA`.
+
+ > While you may be able to get the schema path using the
+ > `HERRERA_ANNOTATIONS_SCHEMA` constant, I don't recommend it. It isn't
+ > available until the ToXml class is loaded, and the the name is not
+ > guaranteed to be consistent.
+
 [Build Status]: https://travis-ci.org/herrera-io/php-annotations.png?branch=master
 [Doctrine Annotations]: http://docs.doctrine-project.org/projects/doctrine-common/en/latest/reference/annotations.html
 [Composer]: http://getcomposer.org/
