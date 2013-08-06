@@ -312,6 +312,69 @@ $string = <<<STRUNG
 STRUNG;
 ```
 
+### To XML
+
+To convert a list of tokens to an XML document, you will need to use an
+instance of the `ToXml` class:
+
+```php
+use Herrera\Annotations\Convert\ToXml;
+
+$toXml = new ToXml();
+
+$doc = $toXml->convert($tokens);
+```
+
+Using this example:
+
+```php
+$doc = $toXml->convert(
+    new Tokens(
+        $tokenizer->parse(
+        <<<DOCBLOCK
+/**
+ * @Annotation\A("Just a simple value.")
+ * @Annotation\B(
+ *     name="SomeName",
+ *     nested=@Annotation(),
+ *     {
+ *         "an array",
+ *         {
+ *             "within an array"
+ *         }
+ *     }
+ * )
+ */
+DOCBLOCK
+        )
+    )
+);
+
+echo $doc->saveXML();
+```
+
+will result in the following XML:
+
+```php
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation\A">
+    <value type="string">Just a simple value.</value>
+  </annotation>
+  <annotation name="Annotation\B">
+    <value key="name" type="string">SomeName</value>
+    <annotation key="nested" name="Annotation"/>
+    <values>
+      <value type="string">an array</value>
+      <values>
+        <value type="string">within an array</value>
+      </values>
+    </values>
+  </annotation>
+</annotations>
+
+```
+
 [Build Status]: https://travis-ci.org/herrera-io/php-annotations.png?branch=master
 [Doctrine Annotations]: http://docs.doctrine-project.org/projects/doctrine-common/en/latest/reference/annotations.html
 [Composer]: http://getcomposer.org/
