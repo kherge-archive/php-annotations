@@ -18,6 +18,7 @@ class TokensTest extends TestCase
         return array(
             array(array(DocLexer::T_FALSE, 'false'), false),
             array(array(DocLexer::T_FLOAT, '1.23'), 1.23),
+            array(array(DocLexer::T_IDENTIFIER, 'CONSTANT'), 'CONSTANT'),
             array(array(DocLexer::T_INTEGER, '123'), 123),
             array(array(DocLexer::T_NULL, 'null'), null),
             array(array(DocLexer::T_STRING, 'test'), 'test'),
@@ -30,6 +31,7 @@ class TokensTest extends TestCase
         return array(
             array(DocLexer::T_FALSE),
             array(DocLexer::T_FLOAT),
+            array(DocLexer::T_IDENTIFIER),
             array(DocLexer::T_INTEGER),
             array(DocLexer::T_NULL),
             array(DocLexer::T_STRING),

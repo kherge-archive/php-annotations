@@ -26,6 +26,7 @@ class Tokens implements ArrayAccess, Countable, Iterator
     private static $hasValue = array(
         DocLexer::T_FALSE => true,
         DocLexer::T_FLOAT => true,
+        DocLexer::T_IDENTIFIER => true,
         DocLexer::T_INTEGER => true,
         DocLexer::T_NULL => true,
         DocLexer::T_STRING => true,
@@ -52,23 +53,23 @@ class Tokens implements ArrayAccess, Countable, Iterator
      * @var array
      */
     private static $valid = array(
-        DocLexer::T_NONE => true,
-        DocLexer::T_INTEGER => true,
-        DocLexer::T_STRING => true,
-        DocLexer::T_FLOAT => true,
-        DocLexer::T_IDENTIFIER => true,
         DocLexer::T_AT => true,
         DocLexer::T_CLOSE_CURLY_BRACES => true,
         DocLexer::T_CLOSE_PARENTHESIS => true,
+        DocLexer::T_COLON => true,
         DocLexer::T_COMMA => true,
         DocLexer::T_EQUALS => true,
         DocLexer::T_FALSE => true,
+        DocLexer::T_FLOAT => true,
+        DocLexer::T_IDENTIFIER => true,
+        DocLexer::T_INTEGER => true,
         DocLexer::T_NAMESPACE_SEPARATOR => true,
+        DocLexer::T_NONE => true,
+        DocLexer::T_NULL => true,
         DocLexer::T_OPEN_CURLY_BRACES => true,
         DocLexer::T_OPEN_PARENTHESIS => true,
+        DocLexer::T_STRING => true,
         DocLexer::T_TRUE => true,
-        DocLexer::T_NULL => true,
-        DocLexer::T_COLON => true,
     );
 
     /**
@@ -180,6 +181,7 @@ class Tokens implements ArrayAccess, Countable, Iterator
                 return (float) $token[1];
             case DocLexer::T_INTEGER:
                 return (int) $token[1];
+            case DocLexer::T_IDENTIFIER:
             case DocLexer::T_STRING:
                 return $token[1];
             case DocLexer::T_TRUE:
