@@ -3,6 +3,7 @@
 namespace Herrera\Annotations\Tests\Convert;
 
 use Doctrine\Common\Annotations\DocLexer;
+use DOMDocument;
 use Herrera\Annotations\Convert\ToXml;
 use Herrera\Annotations\Tokens;
 use Herrera\Annotations\Sequence;
@@ -417,6 +418,51 @@ XML
             $expected,
             $this->converter->convert(new Sequence($tokens))->saveXML()
         );
+    }
+
+    /**
+     * @dataProvider getToken
+     */
+    public function testValidate($tokens, $xml)
+    {
+        $this->assertNull(ToXml::validate($xml));
+
+        $doc = new DOMDocument();
+        $doc->preserveWhiteSpace = false;
+
+        $doc->loadXML($xml);
+
+        $this->assertNull(ToXml::validate($doc));
+    }
+
+    public function testValidateInvalidInput()
+    {
+        $this->setExpectedException(
+            'Herrera\\Annotations\\Exception\\InvalidXmlException',
+            'Couldn\'t find end of Start Tag'
+        );
+
+        ToXml::validate('<bad');
+    }
+
+    public function testValidateInvalidArg()
+    {
+        $this->setExpectedException(
+            'Herrera\\Annotations\\Exception\\InvalidArgumentException',
+            'The $input argument must be an instance of DOMDocument, integer given.'
+        );
+
+        ToXml::validate(123);
+    }
+
+    public function testValidateInvalidXml()
+    {
+        $this->setExpectedException(
+            'Herrera\\Annotations\\Exception\\InvalidXmlException',
+            'Element \'test\': This element is not expected.'
+        );
+
+        ToXml::validate('<annotations><test/></annotations>');
     }
 
     protected function setUp()

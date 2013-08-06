@@ -6,7 +6,17 @@ use Doctrine\Common\Annotations\DocLexer;
 use DOMDocument;
 use DOMElement;
 use DOMText;
+use Herrera\Annotations\Exception\InvalidArgumentException;
+use Herrera\Annotations\Exception\InvalidXmlException;
 use Herrera\Annotations\Tokens;
+
+/**
+ * The path to the annotations schema.
+ */
+define(
+    'HERRERA_ANNOTATIONS_SCHEMA',
+    __DIR__ . '/../../../../../res/annotations.xsd'
+);
 
 /**
  * Converts a series of tokens into an XML document.
@@ -15,6 +25,11 @@ use Herrera\Annotations\Tokens;
  */
 class ToXml extends AbstractConvert
 {
+    /**
+     * @see ANNOTATIONS_SCHEMA
+     */
+    const SCHEMA = HERRERA_ANNOTATIONS_SCHEMA;
+
     /**
      * The annotations XML document.
      *
@@ -42,6 +57,37 @@ class ToXml extends AbstractConvert
      * @var array<DOMElement>
      */
     private $references;
+
+    /**
+     * Validates the annotations XML document.
+     *
+     * @param DOMDocument|string $input The document to validate.
+     *
+     * @throws InvalidArgumentException If $input is not valid.
+     * @throws InvalidXmlException      If the document is not valid.
+     */
+    public static function validate($input)
+    {
+        if (is_string($input)) {
+            $doc = new DOMDocument();
+            $doc->preserveWhiteSpace = false;
+
+            if (!@$doc->loadXML($input)) {
+                throw InvalidXmlException::lastError();
+            }
+
+            $input = $doc;
+        } elseif (!($input instanceof DOMDocument)) {
+            throw InvalidArgumentException::create(
+                'The $input argument must be an instance of DOMDocument, %s given.',
+                gettype($input)
+            );
+        }
+
+        if (!@$input->schemaValidate(self::SCHEMA)) {
+            throw InvalidXmlException::lastError();
+        }
+    }
 
     /**
      * @override
