@@ -120,8 +120,12 @@ class Tokens implements ArrayAccess, Countable, Iterator
      * @throws Exception
      * @throws InvalidTokenException If the token is not valid.
      */
-    public function getToken($offset, array $default = null)
+    public function getToken($offset = null, array $default = null)
     {
+        if (null === $offset) {
+            $offset = $this->offset;
+        }
+
         if (isset($this->tokens[$offset])) {
             if (!isset($this->tokens[$offset][0])) {
                 throw InvalidTokenException::create(
@@ -162,8 +166,12 @@ class Tokens implements ArrayAccess, Countable, Iterator
      * @throws Exception
      * @throws LogicException If the token is not expected to have a value.
      */
-    public function getValue($offset)
+    public function getValue($offset = null)
     {
+        if (null === $offset) {
+            $offset = $this->offset;
+        }
+
         $token = $this->getToken($offset);
 
         if (!isset(self::$hasValue[$token[0]])) {

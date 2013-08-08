@@ -92,18 +92,6 @@ class TokensTest extends TestCase
         );
     }
 
-    public function testGetTokenMissingId()
-    {
-        $tokens = new Tokens(array(array()));
-
-        $this->setExpectedException(
-            'Herrera\\Annotations\\Exception\\InvalidTokenException',
-            'Token #0 is missing its token identifier.'
-        );
-
-        $tokens->getToken(0);
-    }
-
     public function testGetTokenInvalid()
     {
         $tokens = new Tokens(array(array('test')));
@@ -111,6 +99,18 @@ class TokensTest extends TestCase
         $this->setExpectedException(
             'Herrera\\Annotations\\Exception\\InvalidTokenException',
             'Token #0 does not have a valid token identifier.'
+        );
+
+        $tokens->getToken(0);
+    }
+
+    public function testGetTokenMissingId()
+    {
+        $tokens = new Tokens(array(array()));
+
+        $this->setExpectedException(
+            'Herrera\\Annotations\\Exception\\InvalidTokenException',
+            'Token #0 is missing its token identifier.'
         );
 
         $tokens->getToken(0);
@@ -131,6 +131,14 @@ class TokensTest extends TestCase
         $tokens->current(0);
     }
 
+    public function testGetTokenNoOffset()
+    {
+        $token = array(DocLexer::T_IDENTIFIER, 'test');
+        $tokens = new Tokens(array($token));
+
+        $this->assertEquals($token, $tokens->getToken());
+    }
+
     /**
      * @dataProvider getTokenAndValue
      */
@@ -139,6 +147,17 @@ class TokensTest extends TestCase
         $tokens = new Tokens(array($token));
 
         $this->assertSame($expected, $tokens->getValue(0));
+    }
+
+    public function testGetValueNoOffset()
+    {
+        $tokens = new Tokens(
+            array(
+                array(DocLexer::T_IDENTIFIER, 'test')
+            )
+        );
+
+        $this->assertEquals('test', $tokens->getValue());
     }
 
     public function testGetValueNotExpected()
