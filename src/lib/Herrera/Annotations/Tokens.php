@@ -110,6 +110,22 @@ class Tokens implements ArrayAccess, Countable, Iterator
     }
 
     /**
+     * Returns the token identifier at the offset.
+     *
+     * @param integer $offset The offset to retrieve.
+     *
+     * @return integer The token identifier.
+     */
+    public function getId($offset = null)
+    {
+        if (null !== ($token = $this->getToken($offset))) {
+            return $token[0];
+        }
+
+        return null;
+    }
+
+    /**
      * Returns the token at the offset, or the default given.
      *
      * @param integer $offset  The offset to retrieve.
