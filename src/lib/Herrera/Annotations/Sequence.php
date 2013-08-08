@@ -31,6 +31,7 @@ class Sequence extends Tokens
      */
     private static $sequences = array(
         DocLexer::T_AT => array(
+            DocLexer::T_CLOSE_PARENTHESIS => true,
             DocLexer::T_COLON => true,
             DocLexer::T_COMMA => true,
             DocLexer::T_EQUALS => true,
