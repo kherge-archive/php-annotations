@@ -3,10 +3,10 @@
 namespace Herrera\Annotations\Tests;
 
 use Doctrine\Common\Annotations\DocLexer;
+use Herrera\Annotations\Test\TestTokens;
 use Herrera\Annotations\Tokenizer;
-use Herrera\PHPUnit\TestCase;
 
-class TokenizerTest extends TestCase
+class TokenizerTest extends TestTokens
 {
     /**
      * @var Tokenizer
@@ -15,379 +15,537 @@ class TokenizerTest extends TestCase
 
     public function getDocblocks()
     {
-        return array(
-            array(
-                <<<DOCBLOCK
-/**
- * Ahem.
- *
- * There is no
- *
- * comment here.
- */
+        $docblocks = array();
+        $tokens = $this->getTokens();
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * Empty.
+         */
 DOCBLOCK
-                ,
-                array(),
-                array(),
-            ),
-            array(
-                <<<DOCBLOCK
-/**
- * @simple
- */
-DOCBLOCK
-                ,
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'simple'),
-                ),
-                array(),
-            ),
-            array(
-                <<<DOCBLOCK
-/**
- * @simple()
- */
-DOCBLOCK
-                ,
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'simple'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                array(),
-            ),
-            array(
-                <<<DOCBLOCK
-/**
- * @simple ()
- */
-DOCBLOCK
-                ,
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'simple'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                array(),
-            ),
-            array(
-                <<<DOCBLOCK
-/**
- * @simple(
- * )
- */
-DOCBLOCK
-                ,
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'simple'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                array(),
-            ),
-            array(
-                <<<DOCBLOCK
-/**
- * @simple()
- * @simple\\aliased()
- */
-DOCBLOCK
-                ,
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'Very\\Simple'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'Very\\Simple\\aliased'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                array(),
-                array(
-                    'simple' => 'Very\\Simple'
-                ),
-            ),
-            array(
-                <<<DOCBLOCK
-/**
- * @\\simple\\ simple()
- */
-DOCBLOCK
-                ,
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, '\simple\simple'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                array(),
-            ),
-            array(
-                <<<DOCBLOCK
-/**
- * @ignored
- * \@this\too
- * @!again
- * @but\\not\\this\\one
- */
-DOCBLOCK
-                ,
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'but\not\this\one')
-                ),
-                array('ignored'),
-            ),
-            array(
-                <<<DOCBLOCK
-/**
- * @a("value")
- */
-DOCBLOCK
-                ,
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_STRING, 'value'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                array(),
-            ),
-            array(
-                <<<DOCBLOCK
-/**
- * @an(assigned="value")
- */
-DOCBLOCK
-                ,
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'an'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_IDENTIFIER, 'assigned'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'value'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                array(),
-            ),
-            array(
-                <<<DOCBLOCK
-/**
- * @an(assigned="value",and="another")
- */
-DOCBLOCK
-                ,
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'an'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_IDENTIFIER, 'assigned'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'value'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'and'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'another'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                array(),
-            ),
-            array(
-                <<<DOCBLOCK
-/**
- * @types(false, 1.23, 123, null, "string", true)
- */
-DOCBLOCK
-                ,
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'types'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_FALSE, 'false'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_FLOAT, '1.23'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_NULL, 'null'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_STRING, 'string'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_TRUE, 'true'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                array(),
-            ),
-            array(
-                <<<DOCBLOCK
-/**
- * @array({})
- */
-DOCBLOCK
-                ,
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'array'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_OPEN_CURLY_BRACES),
-                    array(DocLexer::T_CLOSE_CURLY_BRACES),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                array(),
-            ),
-            array(
-                <<<DOCBLOCK
-/**
- * @array({
- *     a=false,
- *     b: 1.23,
- *     c=123,
- *     123: null,
- *     e="string",
- *     "f": true,
- * })
- */
-DOCBLOCK
-                ,
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'array'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_OPEN_CURLY_BRACES),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FALSE, 'false'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'b'),
-                    array(DocLexer::T_COLON),
-                    array(DocLexer::T_FLOAT, '1.23'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'c'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COLON),
-                    array(DocLexer::T_NULL, 'null'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'e'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'string'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_STRING, 'f'),
-                    array(DocLexer::T_COLON),
-                    array(DocLexer::T_TRUE, 'true'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_CLOSE_CURLY_BRACES),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                array(),
-            ),
-            array(
-                <<<DOCBLOCK
-/**
- * @array({
- *     a=false,
- *     b=1.23,
- *     c=123,
- *     d=null,
- *     e="string",
- *     f=true
- * },{
- *     a=false,
- *     b=1.23,
- *     c=123,
- *     d=null,
- *     e="string",
- *     f=true
- * })
- */
-DOCBLOCK
-                ,
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'array'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_OPEN_CURLY_BRACES),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FALSE, 'false'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'b'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FLOAT, '1.23'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'c'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'd'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_NULL, 'null'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'e'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'string'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'f'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_TRUE, 'true'),
-                    array(DocLexer::T_CLOSE_CURLY_BRACES),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_OPEN_CURLY_BRACES),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FALSE, 'false'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'b'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FLOAT, '1.23'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'c'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'd'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_NULL, 'null'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'e'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'string'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'f'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_TRUE, 'true'),
-                    array(DocLexer::T_CLOSE_CURLY_BRACES),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                array(),
-            ),
-            array(
-                <<<DOCBLOCK
-/**
- * @a(@sub)
- */
-DOCBLOCK
-                ,
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'sub'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                array(),
-            ),
+            ,
+            array()
         );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation()
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation ()
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @A
+         * @B
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @A()
+         * @B()
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Namespaced\Annotation
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Namespaced\ Annotation
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Namespaced\Annotation()
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation("string")
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation(
+         *     "string"
+         * )
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation(123, "string", 1.23, CONSTANT, false, true, null)
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation(constant, FALSE, TRUE, NULL)
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation(key="value")
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation(a="b", c="d")
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation(
+         *     a=123,
+         *     b="string",
+         *     c=1.23,
+         *     d=CONSTANT,
+         *     e=false,
+         *     f=true,
+         *     g=null
+         * )
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation({})
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation(key={})
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation({"string"})
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation(
+         *     {
+         *         "string"
+         *     }
+         * )
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation({123, "string", 1.23, CONSTANT, false, true, null})
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation({key="value"})
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation({"key"="value"})
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation({a="b", c="d"})
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation({a="b", "c"="d", 123="e"})
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation({key={}})
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation(a={b={}})
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation({key: {}})
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation(a={b: {}})
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation({key: "value"})
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation({"key": "value"})
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation({a: "b", c: "d"})
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation({a: "b", "c": "d", 123: "e"})
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation(
+         *     {
+         *         "a",
+         *         {
+         *             {
+         *                 "c"
+         *             },
+         *             "b"
+         *         }
+         *     }
+         * )
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation(@Nested)
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation(@Nested())
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation(@Nested, @Nested)
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation(@Nested(), @Nested())
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation(
+         *     @Nested(),
+         *     @Nested()
+         * )
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation(
+         *     @Nested(
+         *         {
+         *             "a",
+         *             {
+         *                 {
+         *                     "c"
+         *                 },
+         *                 "b"
+         *             }
+         *         }
+         *     ),
+         *     @Nested(
+         *         {
+         *             "d",
+         *             {
+         *                 {
+         *                     "f",
+         *                 },
+         *                 "e"
+         *             }
+         *         }
+         *     )
+         * )
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * \@Escaped
+         */
+DOCBLOCK
+            ,
+            array(),
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @!Skipped
+         */
+DOCBLOCK
+            ,
+            array(),
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Ignored
+         * @Kept
+         */
+DOCBLOCK
+            ,
+            array(
+                array(DocLexer::T_AT),
+                array(DocLexer::T_IDENTIFIER, 'Kept'),
+            ),
+            array('Ignored')
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Not\\Aliased
+         * @Original
+         */
+DOCBLOCK
+            ,
+            array(
+                array(DocLexer::T_AT),
+                array(DocLexer::T_IDENTIFIER, 'Not\\Aliased'),
+                array(DocLexer::T_AT),
+                array(DocLexer::T_IDENTIFIER, 'Is\\Aliased'),
+            ),
+            array(),
+            array(
+                'Original' => 'Is\\Aliased'
+            )
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Not\\Aliased
+         * @Original\\Aliased
+         */
+DOCBLOCK
+            ,
+            array(
+                array(DocLexer::T_AT),
+                array(DocLexer::T_IDENTIFIER, 'Not\\Aliased'),
+                array(DocLexer::T_AT),
+                array(DocLexer::T_IDENTIFIER, 'Is\\Aliased'),
+            ),
+            array(),
+            array(
+                'Original' => 'Is'
+            )
+        );
+
+        return $docblocks;
     }
 
     public function testInit()
@@ -401,8 +559,12 @@ DOCBLOCK
     /**
      * @dataProvider getDocblocks
      */
-    public function testParse($docblock, $tokens, $ignored, array $aliases = array())
-    {
+    public function testParse(
+        $docblock,
+        $tokens,
+        array $ignored = array(),
+        array $aliases = array()
+    ) {
         if ($ignored) {
             $this->setPropertyValue($this->tokenizer, 'ignored', $ignored);
         }
