@@ -84,12 +84,45 @@ class TokensTest extends TestCase
         );
     }
 
+    /**
+     * @dataProvider getTokenAndValue
+     */
+    public function testGetId($token)
+    {
+        $tokens = new Tokens(array($token));
+
+        $this->assertSame($token[0], $tokens->getId(0));
+    }
+
+    public function testGetIdNone()
+    {
+        $tokens = new Tokens(array());
+
+        $this->assertNull($tokens->getId());
+    }
+
+    public function testGetIdNoOffset()
+    {
+        $token = array(DocLexer::T_IDENTIFIER, 'test');
+        $tokens = new Tokens(array($token));
+
+        $this->assertEquals($token[0], $tokens->getId());
+    }
+
     public function testGetToken()
     {
         $this->assertEquals(
             array(DocLexer::T_AT),
             $this->tokens->getToken(0)
         );
+    }
+
+    public function testGetTokenDefault()
+    {
+        $default = array(DocLexer::T_FALSE, '123');
+        $tokens = new Tokens(array());
+
+        $this->assertEquals($default, $tokens->getToken(0, $default));
     }
 
     public function testGetTokenInvalid()
