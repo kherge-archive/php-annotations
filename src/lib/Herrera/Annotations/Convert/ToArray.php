@@ -65,6 +65,7 @@ class ToArray extends AbstractConvert
                 $this->startValues();
 
                 break;
+            /** @noinspection PhpMissingBreakStatementInspection */
             case DocLexer::T_IDENTIFIER:
                 $next = $this->tokens->getId($offset + 1);
 
