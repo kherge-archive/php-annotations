@@ -2,8 +2,8 @@
 
 namespace Herrera\Annotations\Convert;
 
+use ArrayObject;
 use Doctrine\Common\Annotations\DocLexer;
-use Herrera\Annotations\Exception\UnexpectedTokenException;
 use Herrera\Annotations\Tokens;
 
 /**
@@ -14,61 +14,46 @@ use Herrera\Annotations\Tokens;
 class ToArray extends AbstractConvert
 {
     /**
-     * The currently active annotation.
+     * The current reference.
      *
-     * @var object
+     * @var ArrayObject
      */
     private $current;
 
     /**
      * The stack of references.
      *
-     * @var array
+     * @var array<ArrayObject>
      */
-    private $references;
+    private $stack;
 
     /**
-     * The active list of values reference.
-     *
-     * @var array
-     */
-    private $values;
-
-    /**
-     * {@inheritDoc}
+     * {@override}
      */
     protected function handle()
     {
-        $assign = false;
         $offset = $this->tokens->key();
-        $token = $this->tokens->current();
 
-        switch ($token[0]) {
+        switch ($this->tokens->getId()) {
             case DocLexer::T_AT:
                 $this->start();
 
                 break;
             case DocLexer::T_CLOSE_CURLY_BRACES:
-                $this->endList();
-
-                break;
             case DocLexer::T_CLOSE_PARENTHESIS:
-                $this->endValues();
-                $this->end();
+                $this->current = array_pop($this->stack);
 
                 break;
             case DocLexer::T_OPEN_CURLY_BRACES:
                 $this->startList();
 
                 break;
-            case DocLexer::T_OPEN_PARENTHESIS:
-                $this->startValues();
-
-                break;
-            /** @noinspection PhpMissingBreakStatementInspection */
             case DocLexer::T_IDENTIFIER:
+            case DocLexer::T_INTEGER:
+            case DocLexer::T_STRING:
                 $next = $this->tokens->getId($offset + 1);
 
+                // skip if key
                 if ((DocLexer::T_COLON === $next)
                     || (DocLexer::T_EQUALS === $next)) {
                     break;
@@ -77,12 +62,14 @@ class ToArray extends AbstractConvert
                 // no break
             case DocLexer::T_FALSE:
             case DocLexer::T_FLOAT:
-            case DocLexer::T_INTEGER:
             case DocLexer::T_NULL:
-            case DocLexer::T_STRING:
             case DocLexer::T_TRUE:
-                $assign = true;
-                $token[1] = $this->tokens->getValue($offset);
+                if (null === ($key = $this->tokens->getKey())) {
+                    $this->current[] = $this->tokens->getValue();
+                } else {
+                    $this->current[$key] = $this->tokens->getValue();
+                }
+
                 break;
             case DocLexer::T_COLON:
             case DocLexer::T_COMMA:
@@ -90,106 +77,41 @@ class ToArray extends AbstractConvert
                 break;
         }
 
-        // assigning a value?
-        if ($assign) {
-
-            // make sure the value isn't actually a key
-            if ((null !== ($op = $this->tokens->getToken($offset + 1)))
-                && (DocLexer::T_COLON !== $op[0])
-                && (DocLexer::T_EQUALS !== $op[0])) {
-
-                // check if the value is set using a key.
-                if (null !== ($key = $this->key($offset))) {
-                    $this->values[$key] = $token[1];
-                } else {
-                    $this->values[] = $token[1];
-                }
-            }
+        // convert on last token
+        if (!isset($this->tokens[$this->tokens->key() + 1])) {
+            $this->result = $this->finish($this->result);
         }
     }
 
     /**
-     * {@inheritDoc}
+     * {@override}
      */
     protected function reset(Tokens $tokens)
     {
-        unset($this->current);
-        unset($this->values);
-
         $this->current = null;
-        $this->references = array();
         $this->result = array();
+        $this->stack = array();
         $this->tokens = $tokens;
-        $this->values = null;
     }
 
     /**
-     * Removes references to the current annotation and its values.
+     * Finishes by converting ArrayObject to array.
      */
-    private function end()
+    private function finish($list)
     {
-        if (empty($this->references)) {
-            unset($this->current);
-            unset($this->values);
-
-            $this->current = null;
-            $this->values = null;
-        }
-    }
-
-    /**
-     * Ends accepting values for the current list.
-     */
-    private function endList()
-    {
-        end($this->references);
-
-        $key = key($this->references);
-
-        $this->values =& $this->references[$key];
-
-        unset($this->references[$key]);
-    }
-
-    /**
-     * Ends accepting values for the current annotation.
-     */
-    private function endValues()
-    {
-        end($this->references);
-
-        $key = key($this->references);
-
-        $this->current = &$this->references[$key];
-        $this->values = &$this->current->values;
-
-        unset($this->references[$key]);
-    }
-
-    /**
-     * Returns the key name if available.
-     *
-     * @param integer $offset The offset of a possibly assigned value.
-     *
-     * @return string The key, if any.
-     */
-    private function key($offset)
-    {
-        // get the "key" and assignment operator
-        $op = $this->tokens->getToken($offset - 1);
-        $key = $this->tokens->getToken($offset - 2);
-
-        // do we have both?
-        if ($op && $key) {
-
-            // make sure that the operator is an assignment operator
-            if ((DocLexer::T_COLON === $op[0])
-                || (DocLexer::T_EQUALS === $op[0])) {
-                return $key[1];
+        if (is_array($list) || ($list instanceof ArrayObject)) {
+            foreach ($list as $index => $item) {
+                $list[$index] = $this->finish($item);
             }
+
+            if ($list instanceof ArrayObject) {
+                $list = $list->getArrayCopy();
+            }
+        } elseif (is_object($list)) {
+            $list->values = $this->finish($list->values);
         }
 
-        return null;
+        return $list;
     }
 
     /**
@@ -197,69 +119,51 @@ class ToArray extends AbstractConvert
      */
     private function start()
     {
-        // make sure we have its name
-        $name = $this->tokens->getToken($this->tokens->key() + 1);
-
-        if ((null === $name)
-            || (DocLexer::T_IDENTIFIER !== $name[0])) {
-            throw UnexpectedTokenException::create(
-                'The annotation (beginning at %d) is missing its identifier.',
-                $this->tokens->key()
-            );
-        }
-
-        $new = (object) array(
-            'name' => $name[1],
-            'values' => array(),
+        $annotation = (object) array(
+            'name' => $this->tokens->getValue($this->tokens->key() + 1),
+            'values' => new ArrayObject(),
         );
 
-        // if we have an existing one, make it nested
-        if ($this->current && (null !== $this->values)) {
+        // skip the name token
+        $this->tokens->next();
 
-            // if set using a key, use the key
-            if (null !== ($key = $this->key($this->tokens->key()))) {
-                $this->values[$key] = $new;
+        $offset = $this->tokens->key();
+
+        // nest, if necessary
+        if ($this->current) {
+            if (null === ($key = $this->tokens->getKey($offset - 1))) {
+                $this->current[] = $annotation;
             } else {
-                $this->values[] = $new;
+                $this->current[$key] = $annotation;
             }
 
-            $this->references[] = $this->current;
-            $this->current = $new;
+            $this->stack[] = $this->current;
 
-            // if this is new, treat it as a "root" annotation
+            // add to root
         } else {
-            $this->current = $new;
-            $this->result[] = $new;
+            $this->result[] = $annotation;
+        }
+
+        if (DocLexer::T_OPEN_PARENTHESIS
+            === $this->tokens->getId($offset + 1)) {
+            $this->current = $annotation->values;
         }
     }
 
     /**
-     * Begins accepting values for a list.
+     * Begins an array of values.
      */
     private function startList()
     {
-        // if the list is set using a key, use it
-        if (null !== ($key = $this->key($this->tokens->key()))) {
-            $this->values[$key] = array();
-            $this->references[] = &$this->values;
-            $this->values = &$this->values[$key];
+        $list = new ArrayObject();
 
-            // just append the new list
+        if (null === ($key = $this->tokens->getKey())) {
+            $this->current[] = $list;
         } else {
-            $this->values[] = array();
-            $this->references[] = &$this->values;
-
-            end($this->values);
-
-            $this->values = &$this->values[key($this->values)];
+            $this->current[$key] = $list;
         }
-    }
 
-    /**
-     * Beings accept values for an annotation.
-     */
-    private function startValues()
-    {
-        $this->values = &$this->current->values;
+        $this->stack[] = $this->current;
+        $this->current = $list;
     }
 }
