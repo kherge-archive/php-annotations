@@ -121,6 +121,9 @@ class ToArray extends AbstractConvert
         if (empty($this->references)) {
             unset($this->current);
             unset($this->values);
+
+            $this->current = null;
+            $this->values = null;
         }
     }
 
