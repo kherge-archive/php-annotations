@@ -6,6 +6,7 @@ use Doctrine\Common\Annotations\DocLexer;
 use DOMDocument;
 use DOMElement;
 use DOMText;
+use Herrera\Annotations\Exception\Exception;
 use Herrera\Annotations\Exception\InvalidArgumentException;
 use Herrera\Annotations\Exception\InvalidXmlException;
 use Herrera\Annotations\Tokens;
@@ -63,6 +64,7 @@ class ToXml extends AbstractConvert
      *
      * @param DOMDocument|string $input The document to validate.
      *
+     * @throws Exception
      * @throws InvalidArgumentException If $input is not valid.
      * @throws InvalidXmlException      If the document is not valid.
      */
