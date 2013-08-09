@@ -4,430 +4,776 @@ namespace Herrera\Annotations\Tests\Convert;
 
 use Doctrine\Common\Annotations\DocLexer;
 use Herrera\Annotations\Convert\ToArray;
-use Herrera\Annotations\Tokens;
 use Herrera\Annotations\Sequence;
-use Herrera\PHPUnit\TestCase;
+use Herrera\Annotations\Test\TestTokens;
 
-class ToArrayTest extends TestCase
+class ToArrayTest extends TestTokens
 {
     /**
      * @var ToArray
      */
-    protected $converter;
+    private $converter;
 
-    public function getToken()
+    public function getArrays()
     {
-        return array(
+        $arrays = array();
+        $tokens = $this->getTOkens();
 
+        /**
+         * @Annotation
+         */
+        $arrays[] = array(
+            array_shift($tokens),
             array(
-                array(),
-                array()
-            ),
-
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'simple'),
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(),
                 ),
-                array(
-                    (object) array(
-                        'name' => 'simple',
-                        'values' => array(),
-                    )
-                )
-            ),
+            )
+        );
 
+        /**
+         * @Annotation()
+         */
+        $arrays[] = array(
+            array_shift($tokens),
             array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'simple'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(),
                 ),
-                array(
-                    (object) array(
-                        'name' => 'simple',
-                        'values' => array(),
-                    )
-                )
-            ),
+            )
+        );
 
+        /**
+         * @Annotation ()
+         */
+        $arrays[] = array(
+            array_shift($tokens),
             array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'simple1'),
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'simple2'),
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(),
                 ),
-                array(
-                    (object) array(
-                        'name' => 'simple1',
-                        'values' => array(),
+            )
+        );
+
+        /**
+         * @A
+         * @B
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'A',
+                    'values' => array(),
+                ),
+                (object) array(
+                    'name' => 'B',
+                    'values' => array(),
+                ),
+            )
+        );
+
+        /**
+         * @A()
+         * @B()
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'A',
+                    'values' => array(),
+                ),
+                (object) array(
+                    'name' => 'B',
+                    'values' => array(),
+                ),
+            )
+        );
+
+        /**
+         * @Namespaced\Annotation
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Namespaced\\Annotation',
+                    'values' => array(),
+                ),
+            )
+        );
+
+        /**
+         * @Namespaced\ Annotation
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Namespaced\\Annotation',
+                    'values' => array(),
+                ),
+            )
+        );
+
+        /**
+         * @Namespaced\Annotation()
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Namespaced\\Annotation',
+                    'values' => array(),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation("string")
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        'string'
                     ),
-                    (object) array(
-                        'name' => 'simple2',
-                        'values' => array(),
-                    )
-                )
-            ),
-
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_STRING, 'value'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
                 ),
-                array(
-                    (object) array(
-                        'name' => 'a',
-                        'values' => array(
-                            'value'
-                        ),
-                    )
-                )
-            ),
+            )
+        );
 
+        /**
+         * @Annotation(
+         *     "string"
+         * )
+         */
+        $arrays[] = array(
+            array_shift($tokens),
             array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'an'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_IDENTIFIER, 'assigned'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'value'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        'string'
+                    ),
                 ),
-                array(
-                    (object) array(
-                        'name' => 'an',
-                        'values' => array(
-                            'assigned' => 'value',
-                        ),
-                    )
-                )
-            ),
+            )
+        );
 
+        /**
+         * @Annotation(123, "string", 1.23, CONSTANT, false, true, null)
+         */
+        $arrays[] = array(
+            array_shift($tokens),
             array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'an'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_IDENTIFIER, 'assigned'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'value'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'and'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'another'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        123,
+                        'string',
+                        1.23,
+                        'CONSTANT',
+                        false,
+                        true,
+                        null
+                    ),
                 ),
-                array(
-                    (object) array(
-                        'name' => 'an',
-                        'values' => array(
-                            'assigned' => 'value',
-                            'and' => 'another',
-                        ),
-                    )
-                )
-            ),
+            )
+        );
 
+        /**
+         * @Annotation(constant, FALSE, TRUE, NULL)
+         */
+        $arrays[] = array(
+            array_shift($tokens),
             array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'types'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_FALSE, 'FALSE'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_FLOAT, '1.23'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_NULL, 'NULL'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_STRING, 'string'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_TRUE, 'TRUE'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        'constant',
+                        false,
+                        true,
+                        null
+                    ),
                 ),
-                array(
-                    (object) array(
-                        'name' => 'types',
-                        'values' => array(
-                            false,
-                            1.23,
+            )
+        );
+
+        /**
+         * @Annotation(key="value")
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        'key' => 'value'
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation(a="b", c="d")
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        'a' => 'b',
+                        'c' => 'd'
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation(
+         *     a=123,
+         *     b="string",
+         *     c=1.23,
+         *     d=CONSTANT,
+         *     e=false,
+         *     f=true,
+         *     g=null
+         * )
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        'a' => 123,
+                        'b' => 'string',
+                        'c' => 1.23,
+                        'd' => 'CONSTANT',
+                        'e' => false,
+                        'f' => true,
+                        'g' => null
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation({})
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        array()
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation(key={})
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        'key' => array()
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation({"string"})
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        array('string')
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation(
+         *     {
+         *         "string"
+         *     }
+         * )
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        array('string')
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation({123, "string", 1.23, CONSTANT, false, true, null})
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        array(
                             123,
-                            null,
                             'string',
-                            true
-                        ),
-                    )
-                )
-            ),
-
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'array'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_OPEN_CURLY_BRACES),
-                    array(DocLexer::T_CLOSE_CURLY_BRACES),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
+                            1.23,
+                            'CONSTANT',
+                            false,
+                            true,
+                            null
+                        )
+                    ),
                 ),
-                array(
-                    (object) array(
-                        'name' => 'array',
-                        'values' => array(
-                            array()
-                        ),
-                    )
-                )
-            ),
+            )
+        );
 
+        /**
+         * @Annotation({key="value"})
+         */
+        $arrays[] = array(
+            array_shift($tokens),
             array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'array'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_OPEN_CURLY_BRACES),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FALSE, 'FALSE'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'b'),
-                    array(DocLexer::T_COLON),
-                    array(DocLexer::T_FLOAT, '1.23'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'c'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COLON),
-                    array(DocLexer::T_NULL, 'NULL'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'e'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'string'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_STRING, 'f'),
-                    array(DocLexer::T_COLON),
-                    array(DocLexer::T_TRUE, 'TRUE'),
-                    array(DocLexer::T_CLOSE_CURLY_BRACES),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        array(
+                            'key' => 'value'
+                        )
+                    ),
                 ),
-                array(
-                    (object) array(
-                        'name' => 'array',
-                        'values' => array(
+            )
+        );
+
+        /**
+         * @Annotation({"key"="value"})
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        array(
+                            'key' => 'value'
+                        )
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation({a="b", c="d"})
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        array(
+                            'a' => 'b',
+                            'c' => 'd'
+                        )
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation({a="b", "c"="d", 123="e"})
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        'a' => 'b',
+                        'c' => 'd',
+                        123 => 'e'
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation({key={}})
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        array(
+                            'key' => array()
+                        )
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation(a={b={}})
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        'a' => array(
+                            'b' => array()
+                        )
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation({key: {}})
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        array(
+                            'key' => array()
+                        )
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation(a={b: {}})
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        'a' => array(
+                            'b' => array()
+                        )
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation({key: "value"})
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        array(
+                            'key' => 'value'
+                        )
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation({"key": "value"})
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        array(
+                            'key' => 'value'
+                        )
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation({a: "b", c: "d"})
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        array(
+                            'a' => 'b',
+                            'c' => 'd'
+                        )
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation({a: "b", "c": "d", 123: "e"})
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        array(
+                            'a' => 'b',
+                            'c' => 'd',
+                            123 => 'e'
+                        )
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation(
+         *     {
+         *         "a",
+         *         {
+         *             {
+         *                 "c"
+         *             },
+         *             "b"
+         *         }
+         *     }
+         * )
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        array(
+                            'a',
                             array(
-                                'a' => false,
-                                'b' => 1.23,
-                                'c' => 123,
-                                123 => null,
-                                'e' => 'string',
-                                'f' => true,
+                                array(
+                                    'c'
+                                ),
+                                'b'
                             )
-                        ),
-                    )
-                )
-            ),
-
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'array'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_OPEN_CURLY_BRACES),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FALSE, 'FALSE'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'b'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FLOAT, '1.23'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'c'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'd'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_NULL, 'NULL'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'e'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'string'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_STRING, 'f'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_TRUE, 'TRUE'),
-                    array(DocLexer::T_CLOSE_CURLY_BRACES),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_OPEN_CURLY_BRACES),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FALSE, 'FALSE'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'b'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FLOAT, '1.23'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'c'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'd'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_NULL, 'NULL'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'e'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'string'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_STRING, 'f'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_TRUE, 'TRUE'),
-                    array(DocLexer::T_CLOSE_CURLY_BRACES),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
+                        )
+                    ),
                 ),
-                array(
-                    (object) array(
-                        'name' => 'array',
-                        'values' => array(
-                            array(
-                                'a' => false,
-                                'b' => 1.23,
-                                'c' => 123,
-                                'd' => null,
-                                'e' => 'string',
-                                'f' => true,
-                            ),
-                            array(
-                                'a' => false,
-                                'b' => 1.23,
-                                'c' => 123,
-                                'd' => null,
-                                'e' => 'string',
-                                'f' => true,
-                            )
-                        ),
-                    )
-                )
-            ),
+            )
+        );
 
+        /**
+         * @Annotation(@Nested)
+         */
+        $arrays[] = array(
+            array_shift($tokens),
             array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'sub'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                array(
-                    (object) array(
-                        'name' => 'a',
-                        'values' => array(
-                            (object) array(
-                                'name' => 'sub',
-                                'values' => array()
-                            )
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        (object) array(
+                            'name' => 'Nested',
+                            'values' => array(),
                         ),
-                    )
-                )
-            ),
-
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'My\\Annotation'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_IDENTIFIER, 'name'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'this is the name'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'an'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'Assigned\\Annotation'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'array'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_OPEN_CURLY_BRACES),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_STRING, 'sub test'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'also'),
-                    array(DocLexer::T_COLON),
-                    array(DocLexer::T_STRING, 'assigned'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'One\\More\\Annotation'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_STRING, '!'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                    array(DocLexer::T_CLOSE_CURLY_BRACES),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
+                    ),
                 ),
-                array(
-                    (object) array(
-                        'name' => 'My\\Annotation',
-                        'values' => array(
-                            'name' => 'this is the name',
-                            'an' => (object) array(
-                                'name' => 'Assigned\\Annotation',
-                                'values' => array(),
-                            ),
-                            'array' => array(
-                                123,
-                                'sub test',
-                                'also' => 'assigned',
-                                (object) array(
-                                    'name' => 'One\\More\\Annotation',
-                                    'values' => array(
-                                        '!'
+            )
+        );
+
+        /**
+         * @Annotation(@Nested())
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        (object) array(
+                            'name' => 'Nested',
+                            'values' => array(),
+                        ),
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation(@Nested, @Nested)
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        (object) array(
+                            'name' => 'Nested',
+                            'values' => array(),
+                        ),
+                        (object) array(
+                            'name' => 'Nested',
+                            'values' => array(),
+                        ),
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation(@Nested(), @Nested())
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        (object) array(
+                            'name' => 'Nested',
+                            'values' => array(),
+                        ),
+                        (object) array(
+                            'name' => 'Nested',
+                            'values' => array(),
+                        ),
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation(
+         * @Nested(),
+         * @Nested()
+         * )
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        (object) array(
+                            'name' => 'Nested',
+                            'values' => array(),
+                        ),
+                        (object) array(
+                            'name' => 'Nested',
+                            'values' => array(),
+                        ),
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation(
+         * @Nested(
+         *         {
+         *             "a",
+         *             {
+         *                 {
+         *                     "c"
+         *                 },
+         *                 "b"
+         *             }
+         *         }
+         *     ),
+         * @Nested(
+         *         {
+         *             "d",
+         *             {
+         *                 {
+         *                     "f",
+         *                 },
+         *                 "e"
+         *             }
+         *         }
+         *     )
+         * )
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        (object) array(
+                            'name' => 'Nested',
+                            'values' => array(
+                                array(
+                                    'a',
+                                    array(
+                                        array(
+                                            'c'
+                                        ),
+                                        'b'
                                     )
                                 )
-                            )
+                            ),
                         ),
-                    )
-                )
-            ),
-
+                        (object) array(
+                            'name' => 'Nested',
+                            'values' => array(
+                                array(
+                                    'd',
+                                    array(
+                                        array(
+                                            'f'
+                                        ),
+                                        'e'
+                                    )
+                                )
+                            ),
+                        ),
+                    ),
+                ),
+            )
         );
+
+        return $arrays;
     }
 
     /**
-     * @dataProvider getToken
+     * @dataProvider getArrays
      */
     public function testConvert($tokens, $expected)
     {
         $this->assertEquals(
             $expected,
-            $this->converter->convert(new Sequence($tokens))
-        );
-    }
-
-    public function testConvertMissingId()
-    {
-        $this->setExpectedException(
-            'Herrera\\Annotations\\Exception\\UnexpectedTokenException',
-            'The annotation (beginning at 3) is missing its identifier.'
-        );
-
-        $this->converter->convert(
-            new Tokens(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'top'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                )
+            $this->converter->convert(
+                new Sequence($tokens)
             )
         );
     }
