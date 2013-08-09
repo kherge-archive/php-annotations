@@ -2,6 +2,7 @@
 
 namespace Herrera\Annotations\Tests\Convert;
 
+use DOMDocument;
 use Herrera\Annotations\Convert\ToXml;
 use Herrera\Annotations\Test\TestTokens;
 use Herrera\Annotations\Tokens;
@@ -854,6 +855,52 @@ DOC
             $doc,
             $this->converter->convert($tokens)->saveXml()
         );
+    }
+
+    /**
+     * @dataProvider getDocs
+     */
+    public function testValidate($tokens, $doc)
+    {
+        $this->assertNull(
+            $this->converter->validate($doc)
+        );
+
+        $this->assertNull(
+            $this->converter->validate(
+                DOMDocument::loadXML($doc)
+            )
+        );
+    }
+
+    public function testValidateBadDoc()
+    {
+        $this->setExpectedException(
+            'Herrera\\Annotations\\Exception\\InvalidXmlException',
+            'StartTag: invalid element name in Entity'
+        );
+
+        $this->converter->validate('<');
+    }
+
+    public function testValidateInvalidArg()
+    {
+        $this->setExpectedException(
+            'Herrera\\Annotations\\Exception\\InvalidArgumentException',
+            'The $input argument must be an instance of DOMDocument, integer given.'
+        );
+
+        $this->converter->validate(123);
+    }
+
+    public function testValidateInvalidDoc()
+    {
+        $this->setExpectedException(
+            'Herrera\\Annotations\\Exception\\InvalidXmlException',
+            'The attribute \'key\' is not allowed.'
+        );
+
+        $this->converter->validate('<annotations key="key"/>');
     }
 
     protected function setUp()
