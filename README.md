@@ -3,12 +3,13 @@ Annotations
 
 [![Build Status][]](https://travis-ci.org/herrera-io/php-annotations)
 
-Annotations is a generalized version of the [Doctrine Annotations][] library.
-It is designed to work with Doctrine style annotations, but without requiring
-that annotation classes or constants exist. The library provides a way to
-tokenize annotations and convert them to other formats.
+The Annotations library is for tokenizing and converting Doctrine-styled
+[annotations][]. Unlike the Doctrine Annotations library, this one does not
+require that classes or constants exist, nor are they evaluated.
 
-> The [`DocLexer`][] class from the Doctrine Annotations library is used.
+> The [`DocLexer`][] class from the Doctrine Annotations library is used
+> to generate the tokens from the annotated docblocks. This library handles
+> the filtering, validation, and conversion of those tokens.
 
 Example
 -------
@@ -17,6 +18,7 @@ Example
 use Herrera\Annotations\Tokenizer;
 
 $tokenizer = new Tokenizer();
+
 $tokens = $tokenizer->parse(
     <<<DOCBLOCK
 /**
@@ -87,7 +89,7 @@ The `ignore()` method allows you to specify a list of annotations to ignore.
 By default, none are ignored, so it may be beneficial to register the default
 list provided by Doctrine:
 
-```
+```php
 array(
   'Annotation', 'Attribute', 'Attributes', 'Required', 'SuppressWarnings',
   'TODO', 'Target', 'abstract', 'access', 'api', 'author', 'category', 'code',
@@ -121,10 +123,9 @@ $aliases = array(
 );
 ```
 
-The value of `$parsed` is an array of arrays. Each array in `$parsed` will
-contain a minimum of one value, and a maximum of two. The first value is the
-token's numeric identifier, and the second is the value that came with the
-token.
+The value of `$parsed` is an array of tokens. Each token will contain the
+token's numeric identifier, followed by the value parsed from the docblock
+(if applicable).
 
 > You can find a reference of the [token identifiers here][].
 
@@ -188,8 +189,7 @@ $sequence = new Sequence($tokens); // also accepts a Tokens object
 
 ### To Array
 
-To convert a list of tokens to an array, you will need to use an instance of
-the `ToArray` class:
+An instance of `ToArray` is used to convert tokens to a simple array.
 
 ```php
 use Herrera\Annotations\Convert\ToArray;
@@ -199,9 +199,10 @@ $toArray = new ToArray();
 $array = $toArray->convert($tokens);
 ```
 
-The resulting array that is returned is actually an array of objects. Each
-object represents a single annotation. An annotation object will only ever
-have two fields: `name` and `values`.
+The value of `$array` is an array of objects. Each object represents a single
+annotation in the docblock. Each object will have two properties: `name` and
+`values`. Any values contained in `()` will be in `values`, including nested
+annotations.
 
 The following example:
 
@@ -264,8 +265,8 @@ echo $array[1]->values['nested']->name; // "Annotation"
 
 ### To String
 
-To convert a list of tokens to a string, you will need to use an instance of
-the `ToString` class:
+An instance of `ToString` is used to convert tokens to their string
+representation.
 
 ```php
 use Herrera\Annotations\Convert\ToString;
@@ -304,7 +305,10 @@ DOCBLOCK
 The result will be similar, but without any of the formatting:
 
 ```php
-$string = '@Annotation\A("Just a simple value.")@Annotation\B(name="SomeName",nested=@Annotation(),{"an array",{"within an array"}})';
+$string = <<<STRING
+@Annotation\A("Just a simple value.")
+@Annotation\B(name="SomeName",nested=@Annotation(),{"an array",{"within an array"}})';
+STRING;
 ```
 
 While formatting is supported by the string converter, it is very limited in
@@ -343,8 +347,7 @@ STRUNG;
 
 ### To XML
 
-To convert a list of tokens to an XML document, you will need to use an
-instance of the `ToXml` class:
+An instance of `ToXml` is used to convert tokens to an XML document.
 
 ```php
 use Herrera\Annotations\Convert\ToXml;
@@ -416,6 +419,6 @@ You can also validate annotation XML using `ToXml::validate($input)`, where
 
 [`DocLexer`]: https://github.com/doctrine/annotations/blob/master/lib/Doctrine/Common/Annotations/DocLexer.php
 [Build Status]: https://travis-ci.org/herrera-io/php-annotations.png?branch=master
-[Doctrine Annotations]: http://docs.doctrine-project.org/projects/doctrine-common/en/latest/reference/annotations.html
+[Annotations]: http://docs.doctrine-project.org/projects/doctrine-common/en/latest/reference/annotations.html
 [Composer]: http://getcomposer.org/
 [token identifiers here]: https://github.com/doctrine/annotations/blob/master/lib/Doctrine/Common/Annotations/DocLexer.php#L35
