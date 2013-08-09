@@ -84,6 +84,34 @@ class TokensTest extends TestCase
         );
     }
 
+    public function testGetKey()
+    {
+        $tokens = new Tokens(
+            array(
+                array(DocLexer::T_AT),
+                array(DocLexer::T_IDENTIFIER, 'test'),
+                array(DocLexer::T_OPEN_PARENTHESIS),
+                array(DocLexer::T_OPEN_CURLY_BRACES),
+                array(DocLexer::T_IDENTIFIER, 'a'),
+                array(DocLexer::T_EQUALS),
+                array(DocLexer::T_INTEGER, '123'),
+                array(DocLexer::T_COMMA),
+                array(DocLexer::T_IDENTIFIER, 'b'),
+                array(DocLexer::T_COLON),
+                array(DocLexer::T_INTEGER, '123'),
+                array(DocLexer::T_COMMA),
+                array(DocLexer::T_STRING, 'test'),
+                array(DocLexer::T_CLOSE_CURLY_BRACES),
+                array(DocLexer::T_CLOSE_PARENTHESIS),
+            )
+        );
+
+        $this->assertNull($tokens->getKey());
+        $this->assertEquals('a', $tokens->getKey(6));
+        $this->assertEquals('b', $tokens->getKey(10));
+        $this->assertNull($tokens->getKey(12));
+    }
+
     /**
      * @dataProvider getTokenAndValue
      */

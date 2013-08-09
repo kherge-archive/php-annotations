@@ -126,6 +126,28 @@ class Tokens implements ArrayAccess, Countable, Iterator
     }
 
     /**
+     * Returns the key for the value at the offset.
+     *
+     * @param integer $offset The value's offset.
+     *
+     * @return integer|string The key.
+     */
+    public function getKey($offset = null)
+    {
+        if (null === $offset) {
+            $offset = $this->offset;
+        }
+
+        if ((null !== ($op = $this->getId(--$offset)))
+            && ((DocLexer::T_COLON === $op)
+                || (DocLexer::T_EQUALS === $op))) {
+            return $this->getValue(--$offset);
+        }
+
+        return null;
+    }
+
+    /**
      * Returns the token at the offset, or the default given.
      *
      * @param integer $offset  The offset to retrieve.
