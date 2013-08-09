@@ -862,14 +862,17 @@ DOC
      */
     public function testValidate($tokens, $doc)
     {
+        /** @noinspection PhpVoidFunctionResultUsedInspection */
         $this->assertNull(
             $this->converter->validate($doc)
         );
 
+        $dom = new DOMDocument();
+        $dom->loadXML($doc);
+
+        /** @noinspection PhpVoidFunctionResultUsedInspection */
         $this->assertNull(
-            $this->converter->validate(
-                DOMDocument::loadXML($doc)
-            )
+            $this->converter->validate($dom)
         );
     }
 
