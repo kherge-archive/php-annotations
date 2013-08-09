@@ -647,6 +647,80 @@ class TestTokens extends TestCase
         );
 
         /**
+         * @Annotation(key=@Nested)
+         */
+        $tokens[] = array(
+            array(DocLexer::T_AT),
+            array(DocLexer::T_IDENTIFIER, 'Annotation'),
+            array(DocLexer::T_OPEN_PARENTHESIS),
+            array(DocLexer::T_IDENTIFIER, 'key'),
+            array(DocLexer::T_EQUALS),
+            array(DocLexer::T_AT),
+            array(DocLexer::T_IDENTIFIER, 'Nested'),
+            array(DocLexer::T_CLOSE_PARENTHESIS),
+        );
+
+        /**
+         * @Annotation(a=@Nested(),b=@Nested)
+         */
+        $tokens[] = array(
+            array(DocLexer::T_AT),
+            array(DocLexer::T_IDENTIFIER, 'Annotation'),
+            array(DocLexer::T_OPEN_PARENTHESIS),
+            array(DocLexer::T_IDENTIFIER, 'a'),
+            array(DocLexer::T_EQUALS),
+            array(DocLexer::T_AT),
+            array(DocLexer::T_IDENTIFIER, 'Nested'),
+            array(DocLexer::T_OPEN_PARENTHESIS),
+            array(DocLexer::T_CLOSE_PARENTHESIS),
+            array(DocLexer::T_COMMA),
+            array(DocLexer::T_IDENTIFIER, 'b'),
+            array(DocLexer::T_EQUALS),
+            array(DocLexer::T_AT),
+            array(DocLexer::T_IDENTIFIER, 'Nested'),
+            array(DocLexer::T_CLOSE_PARENTHESIS),
+        );
+
+        /**
+         * @Annotation({key=@Nested})
+         */
+        $tokens[] = array(
+            array(DocLexer::T_AT),
+            array(DocLexer::T_IDENTIFIER, 'Annotation'),
+            array(DocLexer::T_OPEN_PARENTHESIS),
+            array(DocLexer::T_OPEN_CURLY_BRACES),
+            array(DocLexer::T_IDENTIFIER, 'key'),
+            array(DocLexer::T_EQUALS),
+            array(DocLexer::T_AT),
+            array(DocLexer::T_IDENTIFIER, 'Nested'),
+            array(DocLexer::T_CLOSE_CURLY_BRACES),
+            array(DocLexer::T_CLOSE_PARENTHESIS),
+        );
+
+        /**
+         * @Annotation({a=@Nested(),b=@Nested})
+         */
+        $tokens[] = array(
+            array(DocLexer::T_AT),
+            array(DocLexer::T_IDENTIFIER, 'Annotation'),
+            array(DocLexer::T_OPEN_PARENTHESIS),
+            array(DocLexer::T_OPEN_CURLY_BRACES),
+            array(DocLexer::T_IDENTIFIER, 'a'),
+            array(DocLexer::T_EQUALS),
+            array(DocLexer::T_AT),
+            array(DocLexer::T_IDENTIFIER, 'Nested'),
+            array(DocLexer::T_OPEN_PARENTHESIS),
+            array(DocLexer::T_CLOSE_PARENTHESIS),
+            array(DocLexer::T_COMMA),
+            array(DocLexer::T_IDENTIFIER, 'b'),
+            array(DocLexer::T_EQUALS),
+            array(DocLexer::T_AT),
+            array(DocLexer::T_IDENTIFIER, 'Nested'),
+            array(DocLexer::T_CLOSE_CURLY_BRACES),
+            array(DocLexer::T_CLOSE_PARENTHESIS),
+        );
+
+        /**
          * @Annotation(
          *     @Nested(
          *         {
