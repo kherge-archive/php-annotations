@@ -2,369 +2,874 @@
 
 namespace Herrera\Annotations\Tests\Convert;
 
-use Doctrine\Common\Annotations\DocLexer;
 use Herrera\Annotations\Convert\ToString;
+use Herrera\Annotations\Test\TestTokens;
 use Herrera\Annotations\Tokens;
-use Herrera\Annotations\Sequence;
-use Herrera\PHPUnit\TestCase;
 
-class ToStringTest extends TestCase
+class ToStringTest extends TestTokens
 {
     /**
      * @var ToString
      */
-    protected $converter;
+    private $converter;
 
-    public function getToken()
+    public function getStrings()
     {
-        return array(
+        $strings = array();
+        $tokens = $this->getTokens();
 
-            array(
-                array(),
-                ''
-            ),
-
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'simple'),
-                ),
-                '@simple'
-            ),
-
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'simple'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                '@simple()'
-            ),
-
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_STRING, 'value'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                '@a("value")'
-            ),
-
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'an'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_IDENTIFIER, 'assigned'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'value'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                '@an(assigned="value")'
-            ),
-
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'an'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_IDENTIFIER, 'assigned'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'value'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'and'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'another'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                '@an(assigned="value",and="another")'
-            ),
-
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'types'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_FALSE, 'FALSE'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_FLOAT, '1.23'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_NULL, 'null'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_STRING, 'string'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_TRUE, 'true'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                '@types(FALSE,1.23,123,null,"string",true)'
-            ),
-
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'array'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_OPEN_CURLY_BRACES),
-                    array(DocLexer::T_CLOSE_CURLY_BRACES),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                '@array({})'
-            ),
-
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'array'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_OPEN_CURLY_BRACES),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FALSE, 'FALSE'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'b'),
-                    array(DocLexer::T_COLON),
-                    array(DocLexer::T_FLOAT, '1.23'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'c'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COLON),
-                    array(DocLexer::T_NULL, 'NULL'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'e'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'string'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_STRING, 'f'),
-                    array(DocLexer::T_COLON),
-                    array(DocLexer::T_TRUE, 'TRUE'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_CLOSE_CURLY_BRACES),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                '@array({a=FALSE,b:1.23,c=123,123:NULL,e="string","f":TRUE,})'
-            ),
-
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'array'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_OPEN_CURLY_BRACES),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FALSE, 'FALSE'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'b'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FLOAT, '1.23'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'c'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'd'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_NULL, 'NULL'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'e'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'string'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'f'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_TRUE, 'TRUE'),
-                    array(DocLexer::T_CLOSE_CURLY_BRACES),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_OPEN_CURLY_BRACES),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FALSE, 'FALSE'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'b'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FLOAT, '1.23'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'c'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'd'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_NULL, 'NULL'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'e'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'string'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'f'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_TRUE, 'TRUE'),
-                    array(DocLexer::T_CLOSE_CURLY_BRACES),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                '@array({a=FALSE,b=1.23,c=123,d=NULL,e="string",f=TRUE},{a=FALSE,b=1.23,c=123,d=NULL,e="string",f=TRUE})'
-            ),
-
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'sub'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                '@a(@sub)'
-            ),
-
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'My\\Annotation'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_IDENTIFIER, 'name'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'this is the name'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'an'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'Assigned\\Annotation'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'array'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_OPEN_CURLY_BRACES),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_STRING, 'sub test'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'also'),
-                    array(DocLexer::T_COLON),
-                    array(DocLexer::T_STRING, 'assigned'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'One\\More\\Annotation'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_STRING, '!'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                    array(DocLexer::T_CLOSE_CURLY_BRACES),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                '@My\\Annotation(name="this is the name",an=@Assigned\\Annotation,array={123,"sub test",also:"assigned",@One\\More\\Annotation("!")})'
-            ),
-
+        /**
+         * @Annotation
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation
+FORMATTED
         );
+
+        /**
+         * @Annotation()
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation()
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation()
+FORMATTED
+        );
+
+        /**
+         * @Annotation ()
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation()
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation()
+FORMATTED
+        );
+
+        /**
+         * @A
+         * @B
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@A
+@B
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@A
+@B
+FORMATTED
+        );
+
+        /**
+         * @A()
+         * @B()
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@A()
+@B()
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@A()
+@B()
+FORMATTED
+        );
+
+        /**
+         * @Namespaced\Annotation
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Namespaced\Annotation
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Namespaced\Annotation
+FORMATTED
+        );
+
+        /**
+         * @Namespaced\ Annotation
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Namespaced\Annotation
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Namespaced\Annotation
+FORMATTED
+        );
+
+        /**
+         * @Namespaced\Annotation()
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Namespaced\Annotation()
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Namespaced\Annotation()
+FORMATTED
+        );
+
+        /**
+         * @Annotation("string")
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation("string")
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    "string"
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation(
+         *     "string"
+         * )
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation("string")
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    "string"
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation(123, "string", 1.23, CONSTANT, false, true, null)
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation(123,"string",1.23,CONSTANT,false,true,null)
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    123,
+    "string",
+    1.23,
+    CONSTANT,
+    false,
+    true,
+    null
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation(constant, FALSE, TRUE, NULL)
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation(constant,FALSE,TRUE,NULL)
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    constant,
+    FALSE,
+    TRUE,
+    NULL
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation(key="value")
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation(key="value")
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    key="value"
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation(a="b", c="d")
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation(a="b",c="d")
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    a="b",
+    c="d"
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation(
+         *     a=123,
+         *     b="string",
+         *     c=1.23,
+         *     d=CONSTANT,
+         *     e=false,
+         *     f=true,
+         *     g=null
+         * )
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation(a=123,b="string",c=1.23,d=CONSTANT,e=false,f=true,g=null)
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    a=123,
+    b="string",
+    c=1.23,
+    d=CONSTANT,
+    e=false,
+    f=true,
+    g=null
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation({})
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation({})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    {}
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation(key={})
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation(key={})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    key={}
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation({"string"})
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation({"string"})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    {
+        "string"
+    }
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation(
+         *     {
+         *         "string"
+         *     }
+         * )
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation({"string"})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    {
+        "string"
+    }
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation({123, "string", 1.23, CONSTANT, false, true, null})
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation({123,"string",1.23,CONSTANT,false,true,null})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    {
+        123,
+        "string",
+        1.23,
+        CONSTANT,
+        false,
+        true,
+        null
+    }
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation({key="value"})
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation({key="value"})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    {
+        key="value"
+    }
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation({"key"="value"})
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation({"key"="value"})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    {
+        "key"="value"
+    }
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation({a="b", c="d"})
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation({a="b",c="d"})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    {
+        a="b",
+        c="d"
+    }
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation({a="b", "c"="d", 123="e"})
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation({a="b","c"="d",123="e"})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    {
+        a="b",
+        "c"="d",
+        123="e"
+    }
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation({key={}})
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation({key={}})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    {
+        key={}
+    }
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation(a={b={}})
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation(a={b={}})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    a={
+        b={}
+    }
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation({key: {}})
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation({key:{}})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    {
+        key: {}
+    }
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation(a={b: {}})
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation(a={b:{}})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    a={
+        b: {}
+    }
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation({key: "value"})
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation({key:"value"})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    {
+        key: "value"
+    }
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation({"key": "value"})
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation({"key":"value"})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    {
+        "key": "value"
+    }
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation({a: "b", c: "d"})
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation({a:"b",c:"d"})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    {
+        a: "b",
+        c: "d"
+    }
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation({a: "b", "c": "d", 123: "e"})
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation({a:"b","c":"d",123:"e"})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    {
+        a: "b",
+        "c": "d",
+        123: "e"
+    }
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation(
+         *     {
+         *         "a",
+         *         {
+         *             {
+         *                 "c"
+         *             },
+         *             "b"
+         *         }
+         *     }
+         * )
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation({"a",{{"c"},"b"}})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    {
+        "a",
+        {
+            {
+                "c"
+            },
+            "b"
+        }
+    }
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation(@Nested)
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation(@Nested)
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    @Nested
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation(@Nested())
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation(@Nested())
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    @Nested()
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation(@Nested, @Nested)
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation(@Nested,@Nested)
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    @Nested,
+    @Nested
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation(@Nested(), @Nested())
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation(@Nested(),@Nested())
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    @Nested(),
+    @Nested()
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation(
+         *     @Nested(),
+         *     @Nested()
+         * )
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation(@Nested(),@Nested())
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    @Nested(),
+    @Nested()
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation(key=@Nested)
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation(key=@Nested)
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    key=@Nested
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation(a=@Nested(),b=@Nested)
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation(a=@Nested(),b=@Nested)
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    a=@Nested(),
+    b=@Nested
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation({key=@Nested})
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation({key=@Nested})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    {
+        key=@Nested
+    }
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation({a=@Nested(),b=@Nested})
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation({a=@Nested(),b=@Nested})
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    {
+        a=@Nested(),
+        b=@Nested
+    }
+)
+FORMATTED
+        );
+
+        /**
+         * @Annotation(
+         *     @Nested(
+         *         {
+         *             "a",
+         *             {
+         *                 {
+         *                     "c"
+         *                 },
+         *                 "b"
+         *             }
+         *         }
+         *     ),
+         *     @Nested(
+         *         {
+         *             "d",
+         *             {
+         *                 {
+         *                     "f",
+         *                 },
+         *                 "e"
+         *             }
+         *         }
+         *     )
+         * )
+         */
+        $strings[] = array(
+            array_shift($tokens),
+            <<<UNFORMATTED
+@Annotation(@Nested({"a",{{"c"},"b"}}),@Nested({"d",{{"f",},"e"}}))
+UNFORMATTED
+            ,
+            <<<FORMATTED
+@Annotation(
+    @Nested(
+        {
+            "a",
+            {
+                {
+                    "c"
+                },
+                "b"
+            }
+        }
+    ),
+    @Nested(
+        {
+            "d",
+            {
+                {
+                    "f",
+                },
+                "e"
+            }
+        }
+    )
+)
+FORMATTED
+        );
+
+        return $strings;
     }
 
     /**
-     * @dataProvider getToken
+     * @dataProvider getStrings
      */
-    public function testConvert($tokens, $expected)
+    public function testConvert($tokens, $unformatted, $formatted)
     {
+        $tokens = new Tokens($tokens);
+
+        $this->converter->setIndentSize(0);
+        $this->converter->useColonSpace(false);
+
         $this->assertEquals(
-            $expected,
-            $this->converter->convert(new Sequence($tokens))
+            $unformatted,
+            $this->converter->convert($tokens)
+        );
+
+        $this->converter->setIndentSize(4);
+        $this->converter->useColonSpace(true);
+
+        $this->assertEquals(
+            $formatted,
+            $this->converter->convert($tokens)
         );
     }
 
-    public function testConvertFormatted()
-    {
-        $this->setPropertyValue($this->converter, 'size', 4);
-        $this->setPropertyValue($this->converter, 'space', true);
-
-        $tokens = new Tokens(
-            array(
-                array(DocLexer::T_AT),
-                array(DocLexer::T_IDENTIFIER, 'Empty'),
-                array(DocLexer::T_OPEN_PARENTHESIS),
-                array(DocLexer::T_CLOSE_PARENTHESIS),
-                array(DocLexer::T_AT),
-                array(DocLexer::T_IDENTIFIER, 'MadeUp'),
-                array(DocLexer::T_OPEN_PARENTHESIS),
-                array(DocLexer::T_OPEN_CURLY_BRACES),
-                array(DocLexer::T_INTEGER, '123'),
-                array(DocLexer::T_COLON),
-                array(DocLexer::T_STRING, 'test'),
-                array(DocLexer::T_CLOSE_CURLY_BRACES),
-                array(DocLexer::T_CLOSE_PARENTHESIS),
-                array(DocLexer::T_AT),
-                array(DocLexer::T_IDENTIFIER, 'ORM\\JoinTable'),
-                array(DocLexer::T_OPEN_PARENTHESIS),
-                array(DocLexer::T_IDENTIFIER, 'name'),
-                array(DocLexer::T_EQUALS),
-                array(DocLexer::T_STRING, 'myTableJoin'),
-                array(DocLexer::T_COMMA),
-                array(DocLexer::T_IDENTIFIER, 'joinColumns'),
-                array(DocLexer::T_EQUALS),
-                array(DocLexer::T_OPEN_CURLY_BRACES),
-                array(DocLexer::T_AT),
-                array(DocLexer::T_IDENTIFIER, 'ORM\\JoinColumn'),
-                array(DocLexer::T_OPEN_PARENTHESIS),
-                array(DocLexer::T_IDENTIFIER, 'name'),
-                array(DocLexer::T_EQUALS),
-                array(DocLexer::T_STRING, 'joinA'),
-                array(DocLexer::T_COMMA),
-                array(DocLexer::T_IDENTIFIER, 'referencedColumnName'),
-                array(DocLexer::T_EQUALS),
-                array(DocLexer::T_STRING, 'refA'),
-                array(DocLexer::T_CLOSE_PARENTHESIS),
-                array(DocLexer::T_CLOSE_CURLY_BRACES),
-                array(DocLexer::T_COMMA),
-                array(DocLexer::T_IDENTIFIER, 'inverseJoinColumns'),
-                array(DocLexer::T_EQUALS),
-                array(DocLexer::T_OPEN_CURLY_BRACES),
-                array(DocLexer::T_AT),
-                array(DocLexer::T_IDENTIFIER, 'ORM\\JoinColumn'),
-                array(DocLexer::T_OPEN_PARENTHESIS),
-                array(DocLexer::T_IDENTIFIER, 'name'),
-                array(DocLexer::T_EQUALS),
-                array(DocLexer::T_STRING, 'joinB'),
-                array(DocLexer::T_COMMA),
-                array(DocLexer::T_IDENTIFIER, 'referencedColumnName'),
-                array(DocLexer::T_EQUALS),
-                array(DocLexer::T_STRING, 'refB'),
-                array(DocLexer::T_CLOSE_PARENTHESIS),
-                array(DocLexer::T_CLOSE_CURLY_BRACES),
-                array(DocLexer::T_CLOSE_PARENTHESIS),
-            )
-        );
-
-        $expected = <<<EXPECTED
-@Empty()
-@MadeUp(
-    {
-        123: "test"
-    }
-)
-@ORM\JoinTable(
-    name="myTableJoin",
-    joinColumns={
-        @ORM\JoinColumn(
-            name="joinA",
-            referencedColumnName="refA"
-        )
-    },
-    inverseJoinColumns={
-        @ORM\JoinColumn(
-            name="joinB",
-            referencedColumnName="refB"
-        )
-    }
-)
-EXPECTED;
-
-        $this->assertEquals($expected, $this->converter->convert($tokens));
-    }
-
-    public function testSetBreak()
+    public function testSetBreakChar()
     {
         $this->assertSame(
             $this->converter,
@@ -394,11 +899,11 @@ EXPECTED;
     {
         $this->assertSame(
             $this->converter,
-            $this->converter->setIndentSize(100)
+            $this->converter->setIndentSize(123)
         );
 
-        $this->assertSame(
-            100,
+        $this->assertEquals(
+            123,
             $this->getPropertyValue($this->converter, 'size')
         );
     }
