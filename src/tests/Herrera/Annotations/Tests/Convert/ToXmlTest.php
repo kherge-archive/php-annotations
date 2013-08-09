@@ -2,467 +2,858 @@
 
 namespace Herrera\Annotations\Tests\Convert;
 
-use Doctrine\Common\Annotations\DocLexer;
-use DOMDocument;
 use Herrera\Annotations\Convert\ToXml;
+use Herrera\Annotations\Test\TestTokens;
 use Herrera\Annotations\Tokens;
-use Herrera\Annotations\Sequence;
-use Herrera\PHPUnit\TestCase;
 
-class ToXmlTest extends TestCase
+class ToXmlTest extends TestTokens
 {
     /**
      * @var ToXml
      */
-    protected $converter;
+    private $converter;
 
-    public function getToken()
+    public function getDocs()
     {
-        return array(
+        $docs = array();
+        $tokens = $this->getTokens();
 
-            array(
-                array(),
-                <<<XML
-<?xml version="1.0"?>
-<annotations/>
-
-XML
-            ),
-
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'simple'),
-                ),
-                <<<XML
+        /**
+         * @Annotation
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
 <?xml version="1.0"?>
 <annotations>
-  <annotation name="simple"/>
+  <annotation name="Annotation"/>
 </annotations>
 
-XML
-            ),
+DOC
+        );
 
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'simple'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                <<<XML
+        /**
+         * @Annotation()
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
 <?xml version="1.0"?>
 <annotations>
-  <annotation name="simple"/>
+  <annotation name="Annotation"/>
 </annotations>
 
-XML
-            ),
+DOC
+        );
 
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'simple1'),
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'simple2'),
-                ),
-                <<<XML
+        /**
+         * @Annotation ()
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
 <?xml version="1.0"?>
 <annotations>
-  <annotation name="simple1"/>
-  <annotation name="simple2"/>
+  <annotation name="Annotation"/>
 </annotations>
 
-XML
-            ),
+DOC
+        );
 
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_STRING, 'value'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                <<<XML
+        /**
+         * @A
+         * @B
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
 <?xml version="1.0"?>
 <annotations>
-  <annotation name="a">
-    <value type="string">value</value>
-  </annotation>
+  <annotation name="A"/>
+  <annotation name="B"/>
 </annotations>
 
-XML
-            ),
+DOC
+        );
 
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'an'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_IDENTIFIER, 'assigned'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'value'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                <<<XML
+        /**
+         * @A()
+         * @B()
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
 <?xml version="1.0"?>
 <annotations>
-  <annotation name="an">
-    <value key="assigned" type="string">value</value>
-  </annotation>
+  <annotation name="A"/>
+  <annotation name="B"/>
 </annotations>
 
-XML
-            ),
+DOC
+        );
 
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'an'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_IDENTIFIER, 'assigned'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'value'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'and'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'another'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                <<<XML
+        /**
+         * @Namespaced\Annotation
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
 <?xml version="1.0"?>
 <annotations>
-  <annotation name="an">
-    <value key="assigned" type="string">value</value>
-    <value key="and" type="string">another</value>
-  </annotation>
+  <annotation name="Namespaced\\Annotation"/>
 </annotations>
 
-XML
-            ),
+DOC
+        );
 
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'types'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_FALSE, 'FALSE'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_FLOAT, '1.23'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_NULL, 'NULL'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_STRING, 'string'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_TRUE, 'TRUE'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                <<<XML
+        /**
+         * @Namespaced\ Annotation
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
 <?xml version="1.0"?>
 <annotations>
-  <annotation name="types">
-    <value type="boolean">0</value>
-    <value type="float">1.23</value>
-    <value type="integer">123</value>
-    <value type="null"/>
+  <annotation name="Namespaced\\Annotation"/>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Namespaced\Annotation()
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Namespaced\\Annotation"/>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation("string")
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
     <value type="string">string</value>
-    <value type="boolean">1</value>
   </annotation>
 </annotations>
 
-XML
-            ),
+DOC
+        );
 
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'array'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_OPEN_CURLY_BRACES),
-                    array(DocLexer::T_CLOSE_CURLY_BRACES),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                <<<XML
+        /**
+         * @Annotation(
+         *     "string"
+         * )
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
 <?xml version="1.0"?>
 <annotations>
-  <annotation name="array">
+  <annotation name="Annotation">
+    <value type="string">string</value>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation(123, "string", 1.23, CONSTANT, false, true, null)
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <value type="integer">123</value>
+    <value type="string">string</value>
+    <value type="float">1.23</value>
+    <value type="constant">CONSTANT</value>
+    <value type="boolean">0</value>
+    <value type="boolean">1</value>
+    <value type="null"/>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation(constant, FALSE, TRUE, NULL)
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <value type="constant">constant</value>
+    <value type="boolean">0</value>
+    <value type="boolean">1</value>
+    <value type="null"/>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation(key="value")
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <value key="key" type="string">value</value>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation(a="b", c="d")
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <value key="a" type="string">b</value>
+    <value key="c" type="string">d</value>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation(
+         *     a=123,
+         *     b="string",
+         *     c=1.23,
+         *     d=CONSTANT,
+         *     e=false,
+         *     f=true,
+         *     g=null
+         * )
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <value key="a" type="integer">123</value>
+    <value key="b" type="string">string</value>
+    <value key="c" type="float">1.23</value>
+    <value key="d" type="constant">CONSTANT</value>
+    <value key="e" type="boolean">0</value>
+    <value key="f" type="boolean">1</value>
+    <value key="g" type="null"/>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation({})
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
     <values/>
   </annotation>
 </annotations>
 
-XML
-            ),
+DOC
+        );
 
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'array'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_OPEN_CURLY_BRACES),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FALSE, 'FALSE'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'b'),
-                    array(DocLexer::T_COLON),
-                    array(DocLexer::T_FLOAT, '1.23'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'c'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COLON),
-                    array(DocLexer::T_NULL, 'NULL'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'e'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'string'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_STRING, 'f'),
-                    array(DocLexer::T_COLON),
-                    array(DocLexer::T_TRUE, 'TRUE'),
-                    array(DocLexer::T_CLOSE_CURLY_BRACES),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                <<<XML
+        /**
+         * @Annotation(key={})
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
 <?xml version="1.0"?>
 <annotations>
-  <annotation name="array">
+  <annotation name="Annotation">
+    <values key="key"/>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation({"string"})
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
     <values>
-      <value key="a" type="boolean">0</value>
-      <value key="b" type="float">1.23</value>
-      <value key="c" type="integer">123</value>
-      <value key="123" type="null"/>
-      <value key="e" type="string">string</value>
-      <value key="f" type="boolean">1</value>
+      <value type="string">string</value>
     </values>
   </annotation>
 </annotations>
 
-XML
-            ),
+DOC
+        );
 
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'array'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_OPEN_CURLY_BRACES),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FALSE, 'FALSE'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'b'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FLOAT, '1.23'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'c'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'd'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_NULL, 'NULL'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'e'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'string'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_STRING, 'f'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_TRUE, 'TRUE'),
-                    array(DocLexer::T_CLOSE_CURLY_BRACES),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_OPEN_CURLY_BRACES),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FALSE, 'FALSE'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'b'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_FLOAT, '1.23'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'c'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'd'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_NULL, 'NULL'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'e'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'string'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_STRING, 'f'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_TRUE, 'TRUE'),
-                    array(DocLexer::T_CLOSE_CURLY_BRACES),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                <<<XML
+        /**
+         * @Annotation(
+         *     {
+         *         "string"
+         *     }
+         * )
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
 <?xml version="1.0"?>
 <annotations>
-  <annotation name="array">
+  <annotation name="Annotation">
     <values>
-      <value key="a" type="boolean">0</value>
-      <value key="b" type="float">1.23</value>
-      <value key="c" type="integer">123</value>
-      <value key="d" type="null"/>
-      <value key="e" type="string">string</value>
-      <value key="f" type="boolean">1</value>
-    </values>
-    <values>
-      <value key="a" type="boolean">0</value>
-      <value key="b" type="float">1.23</value>
-      <value key="c" type="integer">123</value>
-      <value key="d" type="null"/>
-      <value key="e" type="string">string</value>
-      <value key="f" type="boolean">1</value>
+      <value type="string">string</value>
     </values>
   </annotation>
 </annotations>
 
-XML
-            ),
+DOC
+        );
 
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'a'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'sub'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                <<<XML
+        /**
+         * @Annotation({123, "string", 1.23, CONSTANT, false, true, null})
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
 <?xml version="1.0"?>
 <annotations>
-  <annotation name="a">
-    <annotation name="sub"/>
-  </annotation>
-</annotations>
-
-XML
-            ),
-
-            array(
-                array(
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'My\\Annotation'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_IDENTIFIER, 'name'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_STRING, 'this is the name'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'an'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'Assigned\\Annotation'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'array'),
-                    array(DocLexer::T_EQUALS),
-                    array(DocLexer::T_OPEN_CURLY_BRACES),
-                    array(DocLexer::T_INTEGER, '123'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_STRING, 'sub test'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'also'),
-                    array(DocLexer::T_COLON),
-                    array(DocLexer::T_STRING, 'assigned'),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_AT),
-                    array(DocLexer::T_IDENTIFIER, 'One\\More\\Annotation'),
-                    array(DocLexer::T_OPEN_PARENTHESIS),
-                    array(DocLexer::T_STRING, '!'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                    array(DocLexer::T_CLOSE_CURLY_BRACES),
-                    array(DocLexer::T_COMMA),
-                    array(DocLexer::T_IDENTIFIER, 'SOME_CONSTANT'),
-                    array(DocLexer::T_CLOSE_PARENTHESIS),
-                ),
-                <<<XML
-<?xml version="1.0"?>
-<annotations>
-  <annotation name="My\\Annotation">
-    <value key="name" type="string">this is the name</value>
-    <annotation key="an" name="Assigned\\Annotation"/>
-    <values key="array">
+  <annotation name="Annotation">
+    <values>
       <value type="integer">123</value>
-      <value type="string">sub test</value>
-      <value key="also" type="string">assigned</value>
-      <annotation name="One\\More\\Annotation">
-        <value type="string">!</value>
-      </annotation>
+      <value type="string">string</value>
+      <value type="float">1.23</value>
+      <value type="constant">CONSTANT</value>
+      <value type="boolean">0</value>
+      <value type="boolean">1</value>
+      <value type="null"/>
     </values>
-    <value type="constant">SOME_CONSTANT</value>
   </annotation>
 </annotations>
 
-XML
-            ),
-
+DOC
         );
+
+        /**
+         * @Annotation({key="value"})
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <values>
+      <value key="key" type="string">value</value>
+    </values>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation({"key"="value"})
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <values>
+      <value key="key" type="string">value</value>
+    </values>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation({a="b", c="d"})
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <values>
+      <value key="a" type="string">b</value>
+      <value key="c" type="string">d</value>
+    </values>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation({a="b", "c"="d", 123="e"})
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <values>
+      <value key="a" type="string">b</value>
+      <value key="c" type="string">d</value>
+      <value key="123" type="string">e</value>
+    </values>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation({key={}})
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <values>
+      <values key="key"/>
+    </values>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation(a={b={}})
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <values key="a">
+      <values key="b"/>
+    </values>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation({key: {}})
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <values>
+      <values key="key"/>
+    </values>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation(a={b: {}})
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <values key="a">
+      <values key="b"/>
+    </values>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation({key: "value"})
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <values>
+      <value key="key" type="string">value</value>
+    </values>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation({"key": "value"})
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <values>
+      <value key="key" type="string">value</value>
+    </values>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation({a: "b", c: "d"})
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <values>
+      <value key="a" type="string">b</value>
+      <value key="c" type="string">d</value>
+    </values>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation({a: "b", "c": "d", 123: "e"})
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <values>
+      <value key="a" type="string">b</value>
+      <value key="c" type="string">d</value>
+      <value key="123" type="string">e</value>
+    </values>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation(
+         *     {
+         *         "a",
+         *         {
+         *             {
+         *                 "c"
+         *             },
+         *             "b"
+         *         }
+         *     }
+         * )
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <values>
+      <value type="string">a</value>
+      <values>
+        <values>
+          <value type="string">c</value>
+        </values>
+        <value type="string">b</value>
+      </values>
+    </values>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation(@Nested)
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <annotation name="Nested"/>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation(@Nested())
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <annotation name="Nested"/>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation(@Nested, @Nested)
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <annotation name="Nested"/>
+    <annotation name="Nested"/>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation(@Nested(), @Nested())
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <annotation name="Nested"/>
+    <annotation name="Nested"/>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation(
+         *     @Nested(),
+         *     @Nested()
+         * )
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <annotation name="Nested"/>
+    <annotation name="Nested"/>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation(key=@Nested)
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <annotation key="key" name="Nested"/>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation(a=@Nested(),b=@Nested)
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <annotation key="a" name="Nested"/>
+    <annotation key="b" name="Nested"/>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation({key=@Nested})
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <values>
+      <annotation key="key" name="Nested"/>
+    </values>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation({a=@Nested(),b=@Nested})
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <values>
+      <annotation key="a" name="Nested"/>
+      <annotation key="b" name="Nested"/>
+    </values>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        /**
+         * @Annotation(
+         *     @Nested(
+         *         {
+         *             "a",
+         *             {
+         *                 {
+         *                     "c"
+         *                 },
+         *                 "b"
+         *             }
+         *         }
+         *     ),
+         *     @Nested(
+         *         {
+         *             "d",
+         *             {
+         *                 {
+         *                     "f",
+         *                 },
+         *                 "e"
+         *             }
+         *         }
+         *     )
+         * )
+         */
+        $docs[] = array(
+            array_shift($tokens),
+            <<<DOC
+<?xml version="1.0"?>
+<annotations>
+  <annotation name="Annotation">
+    <annotation name="Nested">
+      <values>
+        <value type="string">a</value>
+        <values>
+          <values>
+            <value type="string">c</value>
+          </values>
+          <value type="string">b</value>
+        </values>
+      </values>
+    </annotation>
+    <annotation name="Nested">
+      <values>
+        <value type="string">d</value>
+        <values>
+          <values>
+            <value type="string">f</value>
+          </values>
+          <value type="string">e</value>
+        </values>
+      </values>
+    </annotation>
+  </annotation>
+</annotations>
+
+DOC
+        );
+
+        return $docs;
     }
 
     /**
-     * @dataProvider getToken
+     * @dataProvider getDocs
      */
-    public function testConvert($tokens, $expected)
+    public function testConvert($tokens, $doc)
     {
+        $tokens = new Tokens($tokens);
+
         $this->assertEquals(
-            $expected,
-            $this->converter->convert(new Sequence($tokens))->saveXML()
+            $doc,
+            $this->converter->convert($tokens)->saveXml()
         );
-    }
-
-    /**
-     * @dataProvider getToken
-     */
-    public function testValidate($tokens, $xml)
-    {
-        $this->assertNull(ToXml::validate($xml));
-
-        $doc = new DOMDocument();
-        $doc->preserveWhiteSpace = false;
-
-        $doc->loadXML($xml);
-
-        $this->assertNull(ToXml::validate($doc));
-    }
-
-    public function testValidateInvalidInput()
-    {
-        $this->setExpectedException(
-            'Herrera\\Annotations\\Exception\\InvalidXmlException',
-            'Couldn\'t find end of Start Tag'
-        );
-
-        ToXml::validate('<bad');
-    }
-
-    public function testValidateInvalidArg()
-    {
-        $this->setExpectedException(
-            'Herrera\\Annotations\\Exception\\InvalidArgumentException',
-            'The $input argument must be an instance of DOMDocument, integer given.'
-        );
-
-        ToXml::validate(123);
-    }
-
-    public function testValidateInvalidXml()
-    {
-        $this->setExpectedException(
-            'Herrera\\Annotations\\Exception\\InvalidXmlException',
-            'Element \'test\': This element is not expected.'
-        );
-
-        ToXml::validate('<annotations><test/></annotations>');
     }
 
     protected function setUp()
