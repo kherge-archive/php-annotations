@@ -872,7 +872,7 @@ DOC
 
         /** @noinspection PhpVoidFunctionResultUsedInspection */
         $this->assertNull(
-            $this->converter->validate($dom)
+            ToXml::validate($dom)
         );
     }
 
@@ -883,7 +883,7 @@ DOC
             'StartTag: invalid element name in Entity'
         );
 
-        $this->converter->validate('<');
+        ToXml::validate('<');
     }
 
     public function testValidateInvalidArg()
@@ -893,7 +893,7 @@ DOC
             'The $input argument must be an instance of DOMDocument, integer given.'
         );
 
-        $this->converter->validate(123);
+        ToXml::validate(123);
     }
 
     public function testValidateInvalidDoc()
@@ -903,7 +903,7 @@ DOC
             'The attribute \'key\' is not allowed.'
         );
 
-        $this->converter->validate('<annotations key="key"/>');
+        ToXml::validate('<annotations key="key"/>');
     }
 
     protected function setUp()
