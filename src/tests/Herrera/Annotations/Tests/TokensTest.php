@@ -219,7 +219,10 @@ class TokensTest extends TestCase
      */
     public function testNext()
     {
-        $this->tokens->next();
+        $this->assertEquals(
+            array(DocLexer::T_IDENTIFIER, 'test'),
+            $this->tokens->next()
+        );
 
         $this->assertEquals(1, $this->tokens->key());
     }

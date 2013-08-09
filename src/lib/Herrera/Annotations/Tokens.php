@@ -229,6 +229,12 @@ class Tokens implements ArrayAccess, Countable, Iterator
     public function next()
     {
         $this->offset++;
+
+        if (isset($this->tokens[$this->offset])) {
+            return $this->tokens[$this->offset];
+        }
+
+        return null;
     }
 
     /**
