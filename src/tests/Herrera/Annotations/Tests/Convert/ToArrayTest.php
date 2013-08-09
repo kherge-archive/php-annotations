@@ -412,9 +412,11 @@ class ToArrayTest extends TestTokens
                 (object) array(
                     'name' => 'Annotation',
                     'values' => array(
-                        'a' => 'b',
-                        'c' => 'd',
-                        123 => 'e'
+                        array(
+                            'a' => 'b',
+                            'c' => 'd',
+                            123 => 'e'
+                        )
                     ),
                 ),
             )
