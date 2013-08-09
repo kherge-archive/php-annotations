@@ -440,6 +440,46 @@ DOCBLOCK
         $docblocks[] = array(
             <<<DOCBLOCK
         /**
+         * @Annotation(key=@Nested)
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation(a=@Nested(),b=@Nested)
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation({key=@Nested})
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
+         * @Annotation({a=@Nested(),b=@Nested})
+         */
+DOCBLOCK
+            ,
+            array_shift($tokens)
+        );
+
+        $docblocks[] = array(
+            <<<DOCBLOCK
+        /**
          * @Annotation(
          *     @Nested(
          *         {
@@ -469,6 +509,8 @@ DOCBLOCK
             ,
             array_shift($tokens)
         );
+
+        // tokenizer specific
 
         $docblocks[] = array(
             <<<DOCBLOCK

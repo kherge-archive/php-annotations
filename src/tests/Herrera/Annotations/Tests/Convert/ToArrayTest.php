@@ -700,6 +700,90 @@ class ToArrayTest extends TestTokens
         );
 
         /**
+         * @Annotation(key=@Nested)
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        'key' => (object) array(
+                            'name' => 'Nested',
+                            'values' => array(),
+                        ),
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation(a=@Nested(),b=@Nested)
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        'a' => (object) array(
+                            'name' => 'Nested',
+                            'values' => array(),
+                        ),
+                        'b' => (object) array(
+                            'name' => 'Nested',
+                            'values' => array(),
+                        ),
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation({key=@Nested})
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        array(
+                            'key' => (object) array(
+                                'name' => 'Nested',
+                                'values' => array(),
+                            ),
+                        )
+                    ),
+                ),
+            )
+        );
+
+        /**
+         * @Annotation({a=@Nested(),b=@Nested})
+         */
+        $arrays[] = array(
+            array_shift($tokens),
+            array(
+                (object) array(
+                    'name' => 'Annotation',
+                    'values' => array(
+                        array(
+                            'a' => (object) array(
+                                'name' => 'Nested',
+                                'values' => array(),
+                            ),
+                            'b' => (object) array(
+                                'name' => 'Nested',
+                                'values' => array(),
+                            ),
+                        )
+                    ),
+                ),
+            )
+        );
+
+        /**
          * @Annotation(
          * @Nested(
          *         {
