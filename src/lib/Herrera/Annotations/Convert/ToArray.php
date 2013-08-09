@@ -92,6 +92,8 @@ class ToArray extends AbstractConvert
         $this->result = array();
         $this->stack = array();
         $this->tokens = $tokens;
+
+        $tokens->rewind();
     }
 
     /**
