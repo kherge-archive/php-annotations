@@ -73,4 +73,54 @@ class SequenceTest extends TestTokens
             $sequence->next();
         }
     }
+
+    public function testCurrentUnexpected()
+    {
+        $sequence = new Sequence(
+            array(
+                array(DocLexer::T_IDENTIFIER, 'test')
+            )
+        );
+
+        $this->setExpectedException(
+            'Herrera\\Annotations\\Exception\\UnexpectedTokenException',
+            'Token #0 (100) is not expected here.'
+        );
+
+        $sequence->current();
+    }
+
+    public function testCurrentUnexpectedDeeper()
+    {
+        $sequence = new Sequence(
+            array(
+                array(DocLexer::T_IDENTIFIER, 'test'),
+                array(DocLexer::T_OPEN_PARENTHESIS),
+            )
+        );
+
+        $this->setExpectedException(
+            'Herrera\\Annotations\\Exception\\UnexpectedTokenException',
+            'Token #1 (109) is not expected here.'
+        );
+
+        $sequence->next();
+        $sequence->current();
+    }
+
+    public function testCurrentUnused()
+    {
+        $sequence = new Sequence(
+            array(
+                array(DocLexer::T_NONE)
+            )
+        );
+
+        $this->setExpectedException(
+            'Herrera\\Annotations\\Exception\\UnexpectedTokenException',
+            'Token #0 (1) is not used by this library.'
+        );
+
+        $sequence->current();
+    }
 }
