@@ -125,76 +125,21 @@ class ToString extends AbstractConvert
      */
     protected function handle()
     {
-        $offset = $this->tokens->key();
         $token = $this->tokens->current();
 
-        // increase indent level if opening a values list
-        if ((DocLexer::T_OPEN_CURLY_BRACES === $token[0])
-            || (DocLexer::T_OPEN_PARENTHESIS === $token[0])) {
-            $this->level++;
+        $this->preIndent();
 
-            // decrease indent level if closing values list
-        } elseif ((DocLexer::T_CLOSE_CURLY_BRACES === $token[0])
-            || (DocLexer::T_CLOSE_PARENTHESIS === $token[0])) {
-            $past = $this->tokens->getToken($offset - 1);
-
-            // indent if level > 0
-            if ((0 < $this->level--)
-                && (DocLexer::T_OPEN_CURLY_BRACES !== $past[0])
-                && (DocLexer::T_OPEN_PARENTHESIS !== $past[0])) {
-                $this->indent($this->result);
-            }
-
-            // indent of a comma preceded this token
-        } elseif ((null !== ($past = $this->tokens->getToken($offset - 1)))
-            && (DocLexer::T_COMMA === $past[0])) {
-            $this->indent($this->result);
-        }
-
-        switch ($token[0]) {
-            // simple append
-            case DocLexer::T_FALSE:
-            case DocLexer::T_FLOAT:
-            case DocLexer::T_IDENTIFIER:
-            case DocLexer::T_INTEGER:
-            case DocLexer::T_NULL:
-            case DocLexer::T_TRUE:
+        if (isset(self::$map[$token[0]])) {
+            $this->result .= self::$map[$token[0]];
+        } else {
+            if (DocLexer::T_STRING === $token[0]) {
+                $this->result .= '"' . $token[1] . '"';
+            } else {
                 $this->result .= $token[1];
-                break;
-
-            // quote the string
-            case DocLexer::T_STRING:
-                $this->result .= "\"{$token[1]}\"";
-                break;
-
-            // separate root level annotations
-            /** @noinspection PhpMissingBreakStatementInspection */
-            case DocLexer::T_AT:
-                if ($this->result && (0 === $this->level)) {
-                    $this->result .= $this->break;
-                }
-
-                // no break
-
-                // map characters using a table
-            default:
-                $this->result .= self::$map[$token[0]];
-
-                // add the colon space, if required
-                if ($this->space && (DocLexer::T_COLON === $token[0])) {
-                    $this->result .= ' ';
-
-                    // indent after starting a values list
-                } elseif ((DocLexer::T_OPEN_PARENTHESIS === $token[0])
-                    || (DocLexer::T_OPEN_CURLY_BRACES === $token[0])) {
-                    $next = $this->tokens->getToken($offset + 1);
-
-                    if ((DocLexer::T_CLOSE_CURLY_BRACES !== $next[0])
-                        && (DocLexer::T_CLOSE_PARENTHESIS !== $next[0])) {
-                        $this->indent($this->result);
-                    }
-                }
+            }
         }
+
+        $this->postIndent();
     }
 
     /**
@@ -205,18 +150,104 @@ class ToString extends AbstractConvert
         $this->level = 0;
         $this->result = '';
         $this->tokens = $tokens;
+
+        $tokens->rewind();
     }
 
     /**
-     * Adds indentation to the string.
+     * Adds indentation to the result.
      *
-     * @param string &$string The string.
+     * @param boolean $force Force add a line break?
      */
-    private function indent(&$string)
+    private function indent($force = false)
     {
+        if ($this->size || $force) {
+            $this->result .= $this->break;
+        }
+
         if ($this->size) {
-            $string .= $this->break;
-            $string .= str_repeat($this->char, $this->size * $this->level);
+            $this->result .= str_repeat(
+                $this->char,
+                $this->size * $this->level
+            );
+        }
+    }
+
+    /**
+     * Handles indentation after the current token.
+     */
+    private function postIndent()
+    {
+        $next = $this->tokens->getId($this->tokens->key() + 1);
+
+        switch ($this->tokens->getId()) {
+            case DocLexer::T_COLON:
+                if ($this->space) {
+                    $this->result .= ' ';
+                }
+
+                break;
+            case DocLexer::T_COMMA:
+                if ((DocLexer::T_CLOSE_CURLY_BRACES !== $next)
+                    && (DocLexer::T_CLOSE_PARENTHESIS !== $next)) {
+                    $this->indent();
+                }
+
+                break;
+            case DocLexer::T_OPEN_CURLY_BRACES:
+                $this->level++;
+
+                if (DocLexer::T_CLOSE_CURLY_BRACES !== $next) {
+                    $this->indent();
+                }
+
+                break;
+            case DocLexer::T_OPEN_PARENTHESIS:
+                $this->level++;
+
+                if (DocLexer::T_CLOSE_PARENTHESIS !== $next) {
+                    $this->indent();
+                }
+
+                break;
+        }
+    }
+
+    /**
+     * Handles indentation before the current token.
+     */
+    private function preIndent()
+    {
+        $prev = $this->tokens->getId($this->tokens->key() - 1);
+
+        switch ($this->tokens->getId()) {
+            case DocLexer::T_AT:
+                if ($prev
+                    && (DocLexer::T_COLON !== $prev)
+                    && (DocLexer::T_COMMA !== $prev)
+                    && (DocLexer::T_EQUALS !== $prev)
+                    && (DocLexer::T_OPEN_CURLY_BRACES !== $prev)
+                    && (DocLexer::T_OPEN_PARENTHESIS !== $prev)) {
+                    $this->indent(true);
+                }
+
+                break;
+            case DocLexer::T_CLOSE_CURLY_BRACES:
+                $this->level--;
+
+                if (DocLexer::T_OPEN_CURLY_BRACES !== $prev) {
+                    $this->indent();
+                }
+
+                break;
+            case DocLexer::T_CLOSE_PARENTHESIS:
+                $this->level--;
+
+                if (DocLexer::T_OPEN_PARENTHESIS !== $prev) {
+                    $this->indent();
+                }
+
+                break;
         }
     }
 }
