@@ -8,7 +8,7 @@ It is designed to work with Doctrine style annotations, but without requiring
 that annotation classes or constants exist. The library provides a way to
 tokenize annotations and convert them to other formats.
 
-> The `DocLexer` class from the Doctrine Annotations library is used.
+> The [`DocLexer`][] class from the Doctrine Annotations library is used.
 
 Example
 -------
@@ -71,9 +71,34 @@ use Herrera\Annotations\Tokenizer;
 
 $tokenizer = new Tokenizer();
 
+$tokenizer->ignore(
+    array(
+        'author',
+        'package'
+    )
+);
+
 $aliases = array('ORM' => 'Doctrine\\ORM\\Mapping');
 
 $parsed = $tokenizer->parse($docblock, $aliases);
+```
+
+The `ignore()` method allows you to specify a list of annotations to ignore.
+By default, none are ignored, so it may be beneficial to register the default
+list provided by Doctrine:
+
+```
+array(
+  'Annotation', 'Attribute', 'Attributes', 'Required', 'SuppressWarnings',
+  'TODO', 'Target', 'abstract', 'access', 'api', 'author', 'category', 'code',
+  'codeCoverageIgnore', 'codeCoverageIgnoreEnd', 'codeCoverageIgnoreStart',
+  'copyright', 'deprec', 'deprecated', 'endcode', 'example', 'exception',
+  'filesource', 'final', 'fixme', 'global', 'ignore', 'ingroup', 'inheritDoc',
+  'inheritdoc', 'internal', 'license', 'link', 'magic', 'method', 'name',
+  'override', 'package', 'package_version', 'param', 'private', 'property',
+  'return', 'see', 'since', 'static', 'staticVar', 'staticvar', 'subpackage',
+  'throw', 'throws', 'todo', 'tutorial', 'usedby', 'uses', 'var', 'version',
+)
 ```
 
 The `$aliases` argument allows you to specify a list of aliases that may
@@ -107,6 +132,10 @@ This example docblock:
 
 ```php
 /**
+ * @author Some Author <some@author.com>
+ *
+ * @package MyPackage
+ *
  * @ORM\Column(name="MyColumn")
  */
 ```
@@ -385,6 +414,7 @@ You can also validate annotation XML using `ToXml::validate($input)`, where
  > available until the ToXml class is loaded, and the the name is not
  > guaranteed to be consistent.
 
+[`DocLexer`]: https://github.com/doctrine/annotations/blob/master/lib/Doctrine/Common/Annotations/DocLexer.php
 [Build Status]: https://travis-ci.org/herrera-io/php-annotations.png?branch=master
 [Doctrine Annotations]: http://docs.doctrine-project.org/projects/doctrine-common/en/latest/reference/annotations.html
 [Composer]: http://getcomposer.org/
