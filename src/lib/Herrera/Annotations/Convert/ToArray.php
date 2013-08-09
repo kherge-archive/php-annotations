@@ -65,6 +65,15 @@ class ToArray extends AbstractConvert
                 $this->startValues();
 
                 break;
+            case DocLexer::T_IDENTIFIER:
+                $next = $this->tokens->getId($offset + 1);
+
+                if ((DocLexer::T_COLON === $next)
+                    || (DocLexer::T_EQUALS === $next)) {
+                    break;
+                }
+
+                // no break
             case DocLexer::T_FALSE:
             case DocLexer::T_FLOAT:
             case DocLexer::T_INTEGER:
