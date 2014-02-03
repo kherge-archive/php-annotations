@@ -69,6 +69,10 @@ class Tokenizer
      */
     public function parse($input, array $aliases = array())
     {
+        if (0 !== strpos(ltrim($input), '/**')) {
+            return array();
+        }
+
         if (false == ($position = strpos($input, '@'))) {
             return array();
         }

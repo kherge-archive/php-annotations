@@ -19,6 +19,11 @@ class TokenizerTest extends TestTokens
         $tokens = $this->getTokens();
 
         $docblocks[] = array(
+            '// @comment',
+            array()
+        );
+
+        $docblocks[] = array(
             <<<DOCBLOCK
         /**
          * Empty.
