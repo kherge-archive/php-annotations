@@ -43,11 +43,12 @@ DOCBLOCK
  *     array(DocLexer::T_COMMA),
  *     array(DocLexer::T_AT),
  *     array(DocLexer::T_IDENTIFIER, 'Nested'),
+ *     array(DocLexer::T_COMMA),
  *     array(DocLexer::T_OPEN_CURLY_BRACES),
  *     array(DocLexer::T_STRING, 'a list'),
+ *     array(DocLexer::T_CLOSE_CURLY_BRACES),
  *     array(DocLexer::T_COMMA),
  *     array(DocLexer::T_IDENTIFIER, 'A_CONSTANT'),
- *     array(DocLexer::T_CLOSE_CURLY_BRACES),
  *     array(DocLexer::T_CLOSE_PARENTHESIS)
  * )
  */
